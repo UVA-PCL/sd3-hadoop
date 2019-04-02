@@ -29,11 +29,7 @@ public class ReadTrace {
 	
 	final static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-	//final static String traceFile = "/home/zl4dc/tracedata/tracedata.txt";
 	final static String root = System.getProperty("user.dir")+"/tracedata/";
-	//final static String cluster1 = "128.143.63.229";
-	//final static String cluster2 = "128.143.63.228";
-	//final static String cluster3 = "128.143.137.232";
 
 	static String cluster1 = "128.143.69.231:9000";//shen-18 file 10-19
 	static String cluster2 = "128.143.69.230:9000";//shen-19 file 20-29
@@ -41,11 +37,6 @@ public class ReadTrace {
 	static String localhost = "";
 
 	
-	
-	// fileSize += file.length();
-	// fileSize+=1024;
-	// fileSize /= 1048576;
-
 	static class readFile implements Runnable {
 		// String cluster;
 		String file;
@@ -56,8 +47,6 @@ public class ReadTrace {
 		
 
 		readFile(String file, long[] bandwidth, Vector<Long> locLatencies, Vector<Long> remLatencies) {
-			// this.cluster = cluster;
-			
 			this.file = file;
 			this.total_bandwidth = bandwidth;
 			this.localLatencies = locLatencies;
@@ -72,52 +61,14 @@ public class ReadTrace {
 			conf.set("fs.hdfs.impl", org.apache.hadoop.hdfs.DistributedFileSystem.class.getName());
 			conf.set("fs.file.impl", org.apache.hadoop.fs.LocalFileSystem.class.getName());	
 			
-			/*	
-			try {
-				
-				String original_cluster = "";
-				if (file.startsWith("file1"))
-					original_cluster = cluster1;
-				else if (file.startsWith("file2"))
-					original_cluster = cluster2;
-				else
-					original_cluster = cluster3;
-				if (!file.startsWith(cluster_number)){
-					
-					String uri = "hdfs://";
-					uri= uri + cluster;
-					uri = uri + "/file/data/";
-					FileSystem hdfs = FileSystem.get(URI.create(uri), conf);
-					String uri2 = uri + file + ".txt";
-					System.out.println("WRITE: " +uri2);
-					Path file_path = new Path(uri2);
-					String origin_uri = "hdfs://"+original_cluster + "/file/data/" + file+".txt" ;
-					File origin_file = new File(origin_uri);
-					BufferedReader br = new BufferedReader(new FileReader(origin_file));
-					OutputStream os = hdfs.create(file_path, new Progressable() {
-												public void progress() {
-							System.out.println("...bytes written");
-						}
-					});
-					BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
-					String line;
-					while ((line = br.readLine()) != null) {
-				        bw.write(line);
-				        bw.newLine();
-				    }
-				}
-			}
-			*/
 			
 			String uri = "hdfs://" + localhost + "/file/data/" + file + ".txt";
 			InputStream in = null;
 			long startTime = System.currentTimeMillis();
 
 			try {
-				// FileSystem fs = FileSystem.get(URI.create(uri), conf);
-				
 				FileSystem fs = FileSystem.get(URI.create(uri), conf);
-                in = fs.open(new Path(uri));
+                                in = fs.open(new Path(uri));
                 
 				byte[] file_buffer = new byte[in.available()];
 				in.read(file_buffer);
@@ -150,8 +101,8 @@ public class ReadTrace {
 				uri = "hdfs://" + original_cluster + "/file/data/" + file + ".txt";
 				try {
 					FileSystem fs = FileSystem.get(URI.create(uri), conf);
-	                in = fs.open(new Path(uri));
-					
+                                        in = fs.open(new Path(uri));
+                                            
 
 					byte[] file_buffer = new byte[in.available()];
 					in.read(file_buffer);

@@ -27,15 +27,15 @@ import javax.sound.midi.SysexMessage;
 
 class runParseLog implements Runnable {
     //final static String filename = "/home/zl4dc/cls1/logs/hdfs-audit.log";
-	final static String filename = System.getProperty("user.dir")+"/hadoop-2.7.7/logs/hdfs-audit.log";
-    
-	static String cluster1 = "128.143.69.231:9000";//shen-18 file 10-19
-	static String cluster2 = "128.143.69.230:9000";//shen-19 file 20-29
-	static String cluster3 = "128.143.69.229:9000";//shen-20 file 30-39
-	//String cluster = "";
-	static String localhost = "";
-    
-	Cluster cluster;
+    final static String filename = System.getProperty("user.dir")+"/hadoop-2.7.7/logs/hdfs-audit.log";
+
+    static String cluster1 = "128.143.69.231:9000";//shen-18 file 10-19
+    static String cluster2 = "128.143.69.230:9000";//shen-19 file 20-29
+    static String cluster3 = "128.143.69.229:9000";//shen-20 file 30-39
+    //String cluster = "";
+    static String localhost = "";
+
+    Cluster cluster;
 	
     private Date curTime;
     private int interval;
@@ -173,8 +173,6 @@ class runParseLog implements Runnable {
         	else {
         		result.add(item);
         	}
-        	//System.out.println("Press Any Key To Continue...");
-            //new java.util.Scanner(System.in).nextLine();
         }
     	return result;
     }
@@ -237,8 +235,6 @@ class runParseLog implements Runnable {
             	ex.printStackTrace();
                 System.out.println("Fail to get FileSystem");
             }
-            //System.out.println("Press Any Key To Continue...");
-            //new java.util.Scanner(System.in).nextLine();
         }
     }
     
@@ -356,14 +352,6 @@ public class UpdateFiles {
 	final static String cluster2 = "128.143.69.230:9000";//shen-19 file 20-29
 	final static String cluster3 = "128.143.69.229:9000";//shen-20 file 30-39
 	public static void main(String[] args) throws IOException {
-//        String oldTime = "2018-04-29 10:30:25";
-//
-//        try {
-//            System.out.println(getDateDiff(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(oldTime),Calendar.getInstance().getTime(),TimeUnit.SECONDS));
-//        }
-//        catch (ParseException pe){
-//            System.out.println("Parse error!");
-//        }
 		if(args.length<1 || args.length>1) {
 			System.out.println("argument number error");
 			System.exit(0);
@@ -382,12 +370,8 @@ public class UpdateFiles {
 			cluster = new Cluster(cluster3);
 		}	
         
-        //new runParseLog(Calendar.getInstance().getTime(), 120, args[0],cluster);
         executor.scheduleAtFixedRate(new runParseLog(Calendar.getInstance().getTime(), 0, args,cluster,true),
 				0, 3000, TimeUnit.SECONDS);
-        
-        //executor.scheduleAtFixedRate(new runParseLog(Calendar.getInstance().getTime(), 120, args[0],cluster), 120, 120, TimeUnit.SECONDS);
-        //executor.schedule(new runParseLog(Calendar.getInstance().getTime(), 20, args[0]), 0, TimeUnit.SECONDS);
         
     }
 }
