@@ -14,45 +14,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.text.SimpleDateFormat;
 
-enum Cmd{
-    open, create, delete, rename, mkdirs, listStatus, setReplication, setOwner, setPermission, getfileinfo
-}
-
-class LogEntry{
-    private String cmdTime;
-    private String ipAddress;
-    private Cmd cmd;
-    private String src;
-
-    LogEntry(String time, String ip, Cmd c, String path){
-        cmdTime = time;
-        ipAddress = ip;
-        cmd = c;
-        src = path;
-    }
-
-    public String getTime(){
-        return cmdTime;
-    }
-
-    public String getIp(){
-        return ipAddress;
-    }
-
-    public Cmd getCmd(){
-        return cmd;
-    }
-
-    public String getSrc(){
-        return src;
-    }
-
-    public String toString(){
-        return cmdTime + " " + ipAddress + " " + cmd + " " + src;
-    }
-
-}
-
 public class ParseLog{
     public ArrayList<LogEntry> records;
     private String filename;
@@ -182,4 +143,42 @@ public class ParseLog{
     }
 
 
+    static class LogEntry{
+        private String cmdTime;
+        private String ipAddress;
+        private Cmd cmd;
+        private String src;
+
+        LogEntry(String time, String ip, Cmd c, String path){
+            cmdTime = time;
+            ipAddress = ip;
+            cmd = c;
+            src = path;
+        }
+
+        public String getTime(){
+            return cmdTime;
+        }
+
+        public String getIp(){
+            return ipAddress;
+        }
+
+        public Cmd getCmd(){
+            return cmd;
+        }
+
+        public String getSrc(){
+            return src;
+        }
+
+        public String toString(){
+            return cmdTime + " " + ipAddress + " " + cmd + " " + src;
+        }
+
+    }
+
+    enum Cmd{
+        open, create, delete, rename, mkdirs, listStatus, setReplication, setOwner, setPermission, getfileinfo
+    }
 }

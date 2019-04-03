@@ -1,9 +1,5 @@
 package com.hdfs;
 
-//import com.hdfs.UpdateFiles;
-import com.hdfs.runParseLog;
-//import com.hdfs.ReadTrace.writeFile;
-
 import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -159,8 +155,8 @@ public class ReadTrace {
 				//situation 1:local original file		
 				synchronized(cluster) {
 				if(cluster.local_file.containsKey(SD3Config.getLocalPathFor(file))) {//local file has replica
-					//InetSocketAddress ori_cluster = Helper.createSocketAddress(localhost.split(":")[0]+":22222");
-					//System.out.println(Helper.sendRequest(ori_cluster, "DELETECOPY_"+"/file/data/"+file+".txt"));
+					InetSocketAddress ori_cluster  = SD3Config.getListenerForCluster(SD3Config.getLocalCluster());
+					Helper.sendRequest(ori_cluster, "DELETECOPY_"+"/file/data/"+file+".txt");
 				}
 				//write file
 				write_File(uri);
@@ -170,16 +166,15 @@ public class ReadTrace {
 				//check whether localhost has the replica file
 				if(cluster.remote_file.containsKey(SD3Config.getLocalPathFor(file))) {//situation 2:local replica file						
 					//notify the original cluster to delete all other replica files
-					String original_cluster_addr = cluster.remote_file.get(SD3Config.getLocalPathFor(file));
-					//InetSocketAddress ori_cluster = Helper.createSocketAddress(original_cluster_addr.split(":")[0]+":22222");
-					//System.out.println(Helper.sendRequest(ori_cluster, "DELETECOPY_"+"/file/data/"+file+".txt"));
+					InetSocketAddress ori_cluster = SD3Config.getListenerForCluster(SD3Config.homeIdForFile(file));
+					Helper.sendRequest(ori_cluster, "DELETECOPY_"+"/file/data/"+file+".txt");
 					//write the original file remotely
 					
 				}
 				else {//situation 3:localhost does NOT have replica or original file
 					//notify the original cluster to delete all other replica files
-					//InetSocketAddress ori_cluster = Helper.createSocketAddress(original_cluster.split(":")[0]+":22222");
-					//System.out.println(Helper.sendRequest(ori_cluster, "DELETECOPY_"+"/file/data/"+file+".txt"));
+					InetSocketAddress ori_cluster = SD3Config.getListenerForCluster(SD3Config.homeIdForFile(file));
+					Helper.sendRequest(ori_cluster, "DELETECOPY_"+"/file/data/"+file+".txt");
 					
 					//write the original file remotely
 						
@@ -341,7 +336,7 @@ public class ReadTrace {
 		
 		ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 		System.out.println("Execution finished. Begin replicating files under the policy.");	        
-		executor.scheduleAtFixedRate(new runParseLog(Calendar.getInstance().getTime(), 0, args,cluster,true),
+		executor.scheduleAtFixedRate(new RunParseLog(Calendar.getInstance().getTime(), 0, args,cluster,true),
 											0, 3600, TimeUnit.SECONDS);
 
 		System.out.println("Replicating finished.");
@@ -355,7 +350,7 @@ public class ReadTrace {
 		
 		System.out.println("Execution finished. Begin replicating all the files");
 		
-		executor.scheduleAtFixedRate(new runParseLog(Calendar.getInstance().getTime(), 0, args,cluster,false),
+		executor.scheduleAtFixedRate(new RunParseLog(Calendar.getInstance().getTime(), 0, args,cluster,false),
 				0, 3600, TimeUnit.SECONDS);
 		System.out.println("Replicating finished.");
 
