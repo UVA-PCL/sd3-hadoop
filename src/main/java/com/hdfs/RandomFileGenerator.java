@@ -16,7 +16,6 @@ import java.util.Scanner;
 
 public class RandomFileGenerator {
 
-    private static File root = new File(System.getProperty("user.dir")+"/cluster_file/");
     private final String fileName;
     private final int lines;
 
@@ -26,7 +25,7 @@ public class RandomFileGenerator {
     }
 
     void generate() throws IOException {
-        Path fullPath = new File(root, fileName).toPath();
+        Path fullPath = new File(SD3Config.getTraceDataRoot(), fileName).toPath();
         // make sure file exists
         Files.createDirectories(fullPath.getParent());
         try (BufferedWriter bw = Files.newBufferedWriter(fullPath)) {

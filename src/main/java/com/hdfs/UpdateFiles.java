@@ -26,9 +26,6 @@ import javax.sound.midi.SysexMessage;
 
 
 class runParseLog implements Runnable {
-    //final static String filename = "/home/zl4dc/cls1/logs/hdfs-audit.log";
-    final static String filename = System.getProperty("user.dir")+"/hadoop-2.7.7/logs/hdfs-audit.log";
-
     Cluster cluster;
 	
     private Date curTime;
@@ -59,7 +56,7 @@ class runParseLog implements Runnable {
     				break;
     			}
 
-    			ParseLog pl = new ParseLog(filename, curTime, interval);
+    			ParseLog pl = new ParseLog(SD3Config.getAuditLog(), curTime, interval);
 
     			pl.readFile();
 
@@ -81,7 +78,7 @@ class runParseLog implements Runnable {
     	}
     	
     	else {
-    		ParseLog pl = new ParseLog(filename, curTime, interval);
+    		ParseLog pl = new ParseLog(SD3Config.getAuditLog(), curTime, interval);
 
     		pl.readFile();
 

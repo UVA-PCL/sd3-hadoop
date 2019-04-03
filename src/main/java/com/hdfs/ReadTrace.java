@@ -227,7 +227,7 @@ public class ReadTrace {
 
 		PrintWriter writer = null;
 		try {
-			writer = new PrintWriter(runParseLog.filename);
+			writer = new PrintWriter(SD3Config.getAuditLog());
 			writer.print("");
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
