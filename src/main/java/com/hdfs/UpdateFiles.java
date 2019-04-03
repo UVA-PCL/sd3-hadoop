@@ -29,12 +29,6 @@ class runParseLog implements Runnable {
     //final static String filename = "/home/zl4dc/cls1/logs/hdfs-audit.log";
     final static String filename = System.getProperty("user.dir")+"/hadoop-2.7.7/logs/hdfs-audit.log";
 
-    static String cluster1 = "128.143.69.231:9000";//shen-18 file 10-19
-    static String cluster2 = "128.143.69.230:9000";//shen-19 file 20-29
-    static String cluster3 = "128.143.69.229:9000";//shen-20 file 30-39
-    //String cluster = "";
-    static String localhost = "";
-
     Cluster cluster;
 	
     private Date curTime;
@@ -44,19 +38,6 @@ class runParseLog implements Runnable {
     
     runParseLog(Date curTime, int interval, String[] args,Cluster c, boolean usePolicy){
     	//this.cluster = cluster;
-    	this.cluster = c;
-    	cluster1 = args[2];
-    	cluster2 = args[3];
-    	cluster3 = args[4];
-		if(args[0].equals("1")) {
-			localhost = cluster1;
-		}
-		else if(args[0].equals("2")) {
-			localhost = cluster2;
-		}
-		else {
-			localhost = cluster3;
-		}	
     	this.curTime = curTime;
     	this.interval = interval;
     	this.usePolicy = usePolicy;
@@ -112,42 +93,15 @@ class runParseLog implements Runnable {
     	}
     	
         update(chosen_trimmed_records);
-        
-        InetSocketAddress cl1 = Helper.createSocketAddress(cluster1.split(":")[0]+":22222");
-		InetSocketAddress cl2 = Helper.createSocketAddress(cluster2.split(":")[0]+":22222");
-		InetSocketAddress cl3 = Helper.createSocketAddress(cluster3.split(":")[0]+":22222");
-        if(localhost.equals(cluster1)) {
-			if(usePolicy) {
-				Helper.sendRequest(cl2, "FINISH_PR");
-				Helper.sendRequest(cl3, "FINISH_PR");
-			}
-			else {
-				Helper.sendRequest(cl2, "FINISH_AR");
-				Helper.sendRequest(cl3, "FINISH_AR");
-			}
-			
-		}
-		if(localhost.equals(cluster2)) {
-			if(usePolicy) {
-				Helper.sendRequest(cl1, "FINISH_PR");
-				Helper.sendRequest(cl3, "FINISH_PR");
-			}
-			else {
-				Helper.sendRequest(cl1, "FINISH_AR");
-				Helper.sendRequest(cl3, "FINISH_AR");
-			}
-		}
-		if(localhost.equals(cluster3)) {
-			if(usePolicy) {
-				Helper.sendRequest(cl1, "FINISH_PR");
-				Helper.sendRequest(cl2, "FINISH_PR");
-			}
-			else {
-				Helper.sendRequest(cl1, "FINISH_AR");
-				Helper.sendRequest(cl2, "FINISH_AR");
-			}
-		}
-		System.out.println("Send finish partial replication message to others. Waiting.");
+        InetSocketAddress[] listeners = SD3Config.getRemoteListeners();
+        for (InetSocketAddress listener: listeners) {
+            if (usePolicy) {
+                Helper.sendRequest(listener, "FINISH_PR");
+            } else {
+                Helper.sendRequest(listener, "FINISH_AR");
+            }
+        }
+        System.out.println("Send finish partial replication message to others. Waiting.");
         
         /*
         System.out.println("local file replica on the remote cluster");
@@ -167,7 +121,7 @@ class runParseLog implements Runnable {
     public ArrayList<String[]> trim(ArrayList<String[]> records){
     	ArrayList<String[]> result = new ArrayList<String[]>();
     	for(String[] item:records) {
-        	if(item[0].equals(localhost.split(":")[0])) {
+        	if(SD3Config.ipToClusterNumber(item[0]) == SD3Config.getLocalCluster()) {
         		
         	}
         	else {
@@ -189,26 +143,13 @@ class runParseLog implements Runnable {
                 org.apache.hadoop.fs.LocalFileSystem.class.getName()
         );
         System.out.println("replicate files start");
-        for(String[] res :result){
-        	
-        	String cluster_name = "shen-null";
-            if(res[0].equals(cluster1.split(":")[0])) {
-                //System.out.println("This operation was done by shen-18");
-                cluster_name = "128.143.69.231:9000";
-            }
+        String local_hdfs = SD3Config.getHdfsRootFor(SD3Config.getLocalCluster());
+        for(String[] res : result){
+            int remoteClusterNumber = SD3Config.ipToClusterNumberOrZero(res[0]);
             
-            if(res[0].equals(cluster2.split(":")[0])) {
-                //System.out.println("This operation was done by shen-19");
-                cluster_name = "128.143.69.230:9000";
-            }
-            
-            if(res[0].equals(cluster3.split(":")[0])) {
-                //System.out.println("This operation was done by shen-20");
-                cluster_name = "128.143.69.229:9000";
-            }
-            
-            String local_uri = "hdfs://"+ localhost + res[1];
-            String remote_uri = "hdfs://"+ cluster_name + res[1];
+            String local_uri = local_hdfs + res[1];
+            String remote_hdfs = SD3Config.getHdfsRootFor(remoteClusterNumber);
+            String remote_uri = remote_hdfs + res[1];
 
             try {
                 FileSystem local_fs = FileSystem.get(URI.create(local_uri), conf);
@@ -218,14 +159,14 @@ class runParseLog implements Runnable {
                 synchronized(cluster.local_file) {
                 	if(cluster.local_file.containsKey(res[1])) {
                 		String clusters = cluster.local_file.get(res[1]);
-                		clusters += ","+cluster_name;
+                		clusters += "," + remoteClusterNumber;
                 		cluster.local_file.put(res[1], clusters);
                 	}
                 	else {
-                		cluster.local_file.put(res[1], cluster_name);
+                		cluster.local_file.put(res[1], ""+remoteClusterNumber);
                 	}               	
                 }
-                InetSocketAddress server = Helper.createSocketAddress(cluster_name.split(":")[0]+":22222");
+                InetSocketAddress server = SD3Config.getListenerForCluster(remoteClusterNumber);
                 String response = Helper.sendRequest(server, "COPY_"+res[1]);
                 //System.out.println("response from "+cluster_name.split(":")[0]+" is "+response);
             }
@@ -348,9 +289,6 @@ class Helper{
 }
 
 public class UpdateFiles {
-	final static String cluster1 = "128.143.69.231:9000";//shen-18 file 10-19
-	final static String cluster2 = "128.143.69.230:9000";//shen-19 file 20-29
-	final static String cluster3 = "128.143.69.229:9000";//shen-20 file 30-39
 	public static void main(String[] args) throws IOException {
 		if(args.length<1 || args.length>1) {
 			System.out.println("argument number error");
@@ -359,16 +297,7 @@ public class UpdateFiles {
 		
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         System.out.println("executor created.");
-        Cluster cluster;
-        if(args[0].equals("1")) {
-			cluster = new Cluster(cluster1);
-		}
-		else if(args[0].equals("2")) {
-			cluster = new Cluster(cluster2);
-		}
-		else {
-			cluster = new Cluster(cluster3);
-		}	
+        Cluster cluster = new Cluster(SD3Config.getHdfsRootFor(Integer.parseInt(args[0])));
         
         executor.scheduleAtFixedRate(new runParseLog(Calendar.getInstance().getTime(), 0, args,cluster,true),
 				0, 3000, TimeUnit.SECONDS);
