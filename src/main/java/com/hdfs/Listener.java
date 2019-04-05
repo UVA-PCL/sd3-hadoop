@@ -17,23 +17,11 @@ public class Listener extends Thread {
 		cluster = c;
 		alive = true;
 		
-		String localip ="";
-		try {
-			localip = InetAddress.getLocalHost().getHostAddress();
-		} catch (UnknownHostException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		
-		String port = "22222";
-
-		
-
 		//open server/listener socket
 		try {
-			serverSocket = new ServerSocket(Integer.parseInt(port));
+			serverSocket = new ServerSocket(SD3Config.getListenerPort());
 		} catch (IOException e) {
-			throw new RuntimeException("\nCannot open listener port "+port+". Now exit.\n", e);
+			throw new RuntimeException("\nCannot open listener port "+SD3Config.getListenerPort()+". Now exit.\n", e);
 		}
 	}
 

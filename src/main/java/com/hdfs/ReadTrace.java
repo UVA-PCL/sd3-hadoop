@@ -1,6 +1,7 @@
 package com.hdfs;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IOUtils;
@@ -10,34 +11,26 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-//import java.net.URISyntaxException;
-//import org.apache.hadoop.fs.FileUtil;
-
-//import javax.print.URIException;
-
 public class ReadTrace {
 
 	int total_bandwidth;
 	
-	final static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
 	static class readFile implements Runnable {
 		// String cluster;
 		String file;
 		long[] total_bandwidth;
-		Vector<Long> localLatencies;
-		Vector<Long> remoteLatencies;
-		boolean local;
-		
+		ArrayList<Long> localLatencies;
+		ArrayList<Long> remoteLatencies;
 
-		readFile(String file, long[] bandwidth, Vector<Long> locLatencies, Vector<Long> remLatencies) {
+
+		readFile(String file, long[] bandwidth, ArrayList<Long> locLatencies, ArrayList<Long> remLatencies) {
 			this.file = file;
 			this.total_bandwidth = bandwidth;
 			this.localLatencies = locLatencies;
@@ -59,13 +52,20 @@ public class ReadTrace {
 
 			try {
 				FileSystem fs = FileSystem.get(URI.create(uri), conf);
-                                in = fs.open(new Path(uri));
-                
-				byte[] file_buffer = new byte[in.available()];
-				in.read(file_buffer);
+				Path p = new Path(uri);
+				FileStatus status = fs.getFileStatus(p);
+				int length = (int) status.getLen();
 				
-				
-				total_bandwidth[0] += Long.valueOf(file_buffer.length);
+                in = fs.open(new Path(uri));
+
+				byte[] file_buffer = new byte[length];
+				int count = in.read(file_buffer);
+				if (count < length) {
+					throw new RuntimeException("Underlength read of " + file);
+				}
+
+
+				total_bandwidth[0] += file_buffer.length;
 				//IOUtils.copyBytes(in, System.out, 4096, false);
 				long newLat = readLocalFileLatency(startTime);
 				localLatencies.add(newLat);
@@ -119,7 +119,7 @@ public class ReadTrace {
 
 	static class writeFile implements Runnable {
 		String file;
-		Cluster cluster;
+		final Cluster cluster;
 		writeFile(Cluster cluster, String file) {
 			this.cluster = cluster;
 			this.file = file;
@@ -194,8 +194,6 @@ public class ReadTrace {
 		conf.set("fs.file.impl", org.apache.hadoop.fs.LocalFileSystem.class.getName());
 		try {
 			
-			Path newPath = new Path(uri);
-
 			FileSystem tempfs = FileSystem.get(URI.create(uri), conf);
 			InputStream in = null;
 			FileSystem fs = FileSystem.get(URI.create(uri), conf);
@@ -218,31 +216,30 @@ public class ReadTrace {
 	}
 	
 	public static void operate_Trace(String[] args,Cluster cluster) throws InterruptedException {
-		Vector<Long> localLatencies = new Vector();
-		Vector<Long> remoteLatencies = new Vector();
-		long[] total_bandwidth = { 0, 0 };
-		// total_bandwidth[0] is local, [1] is remote
+    ArrayList<Long> localLatencies = new ArrayList<Long>();
+    ArrayList<Long> remoteLatencies = new ArrayList<Long>();
+    long[] total_bandwidth = { 0, 0 };
+    // total_bandwidth[0] is local, [1] is remote
 
-		PrintWriter writer = null;
-		try {
-			writer = new PrintWriter(SD3Config.getAuditLog());
-			writer.print("");
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			//System.out.println("Audit log file not found");
-		} finally {
-			writer.close();
-		}
+    PrintWriter writer = null;
+    try {
+        writer = new PrintWriter(SD3Config.getAuditLog());
+        writer.print("");
+    } catch (FileNotFoundException e) {
+        System.err.println("Warning: Error clearing audit log");
+        e.printStackTrace();
+    } finally {
+        writer.close();
+    }
 
-		long startTime = System.nanoTime();
-		ExecutorService pool = Executors.newFixedThreadPool(1);
+    long startTime = System.nanoTime();
+    ExecutorService pool = Executors.newFixedThreadPool(1);
 
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(SD3Config.getTraceDataRoot()+args[1]));
-			String line = br.readLine();
-			int line_num=1;
-			while (line != null) {
+    try {
+        BufferedReader br = new BufferedReader(new FileReader(SD3Config.getTraceDataRoot()+args[1]));
+        String line = br.readLine();
+        int line_num=1;
+        while (line != null) {
                             String[] trace = line.split(" ");
                             //System.out.println("read the trace line "+line_num+":"+line);
                             line_num++;
@@ -282,8 +279,8 @@ public class ReadTrace {
 		double avg_remote_latency = 0.0;
 		int abandoned = 0;
 		for (int i = 0; i < localLatencies.size(); i++) {
-			if(localLatencies.elementAt(i)<50)
-				avg_local_latency += localLatencies.elementAt(i);
+			if(localLatencies.get(i)<50)
+				avg_local_latency += localLatencies.get(i);
 			else
 				abandoned++;
 		}
@@ -292,8 +289,8 @@ public class ReadTrace {
 		avg_local_latency = avg_local_latency / localLatencies.size();
 		abandoned = 0;
 		for (int i = 0; i < remoteLatencies.size(); i++) {
-			if(remoteLatencies.elementAt(i)<50)
-				avg_remote_latency += remoteLatencies.elementAt(i);
+			if(remoteLatencies.get(i)<50)
+				avg_remote_latency += remoteLatencies.get(i);
 			else
 				abandoned++;
 			//System.out.println(remoteLatencies.elementAt(i));
@@ -324,7 +321,6 @@ public class ReadTrace {
 			System.out.println("args[2] to args[4] is cluster IP address");
 			System.exit(0);
 		}
-		int i=1;
 		Cluster cluster;
                 SD3Config.setLocalCluster(Integer.parseInt(args[0]));
                 SD3Config.setClusterIPs(new String[]{args[2], args[3], args[4]});

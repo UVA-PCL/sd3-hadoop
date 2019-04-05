@@ -1,9 +1,5 @@
 package com.hdfs;
 
-/**
- * Created by Wyatt on 4/17/18.
- */
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -54,8 +50,6 @@ public class RandomFileGenerator {
     }
     
     public static void main(String[] args) throws IOException {
-        Random ran = new Random();
-        
         //Scanner reader = new Scanner(System.in);  // Reading from System.in
         //System.out.println("Enter cluster number: ");
         //int n = reader.nextInt();

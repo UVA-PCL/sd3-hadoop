@@ -1,9 +1,5 @@
 package com.hdfs;
 
-/**
- * Created by Wyatt on 4/17/18.
- */
-
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;

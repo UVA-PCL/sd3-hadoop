@@ -20,7 +20,7 @@ public class RunParseLog implements Runnable {
     
     
     RunParseLog(Date curTime, int interval, String[] args,Cluster c, boolean usePolicy){
-    	//this.cluster = cluster;
+        this.cluster = c;
     	this.curTime = curTime;
     	this.interval = interval;
     	this.usePolicy = usePolicy;

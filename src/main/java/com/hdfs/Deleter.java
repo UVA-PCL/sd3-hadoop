@@ -27,8 +27,7 @@ public class Deleter extends Thread{
 		try {
 			 fs = FileSystem.get(URI.create(file_path),conf);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 		
 		Path hdfs = new Path(file_path);
@@ -43,8 +42,7 @@ public class Deleter extends Thread{
 			FileUtil.fullyDelete(fs, hdfs);
 			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 		System.out.println("delete file "+file_path);
 		

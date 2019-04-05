@@ -11,9 +11,13 @@ public class SD3Config {
     private static int localCluster = 0;
     private static String filePrefix = "file/data/";
     private static String filePostfix = ".txt";
-    private static int listenerPort = 22222;
-    private static String traceDataRoot = System.getProperty("user.dir")+"/tracedata/";
-    private static String auditLog = System.getProperty("user.dir")+"/hadoop-2.7.7/logs/hdfs-audit.log";
+    private static int listenerPort = Integer.parseInt((String) System.getProperties().getOrDefault("sd3.listener-port", "22222"));
+    private static String traceDataRoot = System.getProperty("sd3.tracedata");
+    private static String auditLog = System.getProperty("sd3.audit-log");
+
+    public static int getListenerPort() {
+        return listenerPort;
+    }
 
     public static String getTraceDataRoot() {
         return traceDataRoot;
