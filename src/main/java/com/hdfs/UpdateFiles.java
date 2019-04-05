@@ -17,7 +17,7 @@ public class UpdateFiles {
         System.out.println("executor created.");
         Cluster cluster = new Cluster(SD3Config.getHdfsRootFor(Integer.parseInt(args[0])));
         
-        executor.scheduleAtFixedRate(new runParseLog(Calendar.getInstance().getTime(), 0, args,cluster,true),
+        executor.scheduleAtFixedRate(new RunParseLog(Calendar.getInstance().getTime(), 0, args,cluster,true),
 				0, 3000, TimeUnit.SECONDS);
         
     }
