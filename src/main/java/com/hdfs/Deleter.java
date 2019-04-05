@@ -1,12 +1,12 @@
 package com.hdfs;
 
-import java.io.IOException;
-import java.net.URI;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
+
+import java.io.IOException;
+import java.net.URI;
 
 public class Deleter extends Thread{
 

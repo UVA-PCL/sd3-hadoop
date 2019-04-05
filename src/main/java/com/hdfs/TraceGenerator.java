@@ -1,7 +1,5 @@
 package com.hdfs;
 
-import org.apache.commons.io.IOExceptionWithCause;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.nio.file.Files;

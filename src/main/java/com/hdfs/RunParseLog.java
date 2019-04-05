@@ -1,17 +1,14 @@
 package com.hdfs;
 
 import org.apache.hadoop.conf.Configuration;
-import java.net.InetAddress;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileUtil;
+import org.apache.hadoop.fs.Path;
+
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.util.concurrent.*;
-import java.util.*;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IOUtils;
-import org.apache.hadoop.fs.FileUtil;
+import java.util.ArrayList;
+import java.util.Date;
 
 
 public class RunParseLog implements Runnable {

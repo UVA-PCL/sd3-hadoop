@@ -3,14 +3,13 @@ package com.hdfs;
 /**
  * Created by Wyatt on 4/17/18.
  */
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Random;
-
-import java.util.Scanner;
 
 
 

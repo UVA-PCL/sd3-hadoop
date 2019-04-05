@@ -1,25 +1,10 @@
 package com.hdfs;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.URI;
-import java.net.UnknownHostException;
-import java.text.ParseException;
-import java.util.concurrent.*;
-import java.util.*;
-import java.text.SimpleDateFormat;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IOUtils;
-import org.apache.hadoop.fs.FileUtil;
+import java.util.Calendar;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class UpdateFiles {
 	public static void main(String[] args) throws IOException {
