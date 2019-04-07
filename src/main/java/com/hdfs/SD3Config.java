@@ -57,6 +57,7 @@ public class SD3Config {
         for (String ip : ips) {
             ipToCluster.put(ip, i);
             clusterToIp.put(i, ip);
+            ++i;
         }
     }
     
