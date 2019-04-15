@@ -60,11 +60,15 @@ public class RandomFileGenerator {
 
         Scanner reader = new Scanner(System.in);  // Reading from System.in
         System.out.println("Enter number of clusters: ");
-        int c_number = reader.nextInt();
-        for(int n = 1; n <= c_number; n++) {
-        	for(int i = 0;i <= 999;i++){
+        int cluster_n = reader.nextInt();
+        System.out.println("Enter number of files per cluster: ");
+        int file_n = reader.nextInt();
+        reader.close();
+
+        for(int n = 1; n <= cluster_n; n++) {
+        	for(int i = 0;i <= (file_n-1);i++){
         		//int line = ran.nextInt(10000000-1000000+1) + 1000000;
-        		int index = 1000*n + i;
+        		int index = file_n*cluster_n + i;
         		new RandomFileGenerator("file" +index+".txt", 100000).generate();
         		System.out.println(i);
         	}
