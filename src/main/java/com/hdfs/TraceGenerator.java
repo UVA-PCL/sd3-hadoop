@@ -10,13 +10,18 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class TraceGenerator {
-	private static File root = new File(System.getProperty("user.dir")+"/tracedata/");
+	//private static File root = new File(System.getProperty("user.dir")+"/tracedata/");
 	//private static final String fileName = "trace5000.txt";
 	//private static int lines = 10000;
 
 	public static void main(String[] args) {
 
-		Scanner reader = new Scanner(System.in);
+
+
+
+		Scanner.out.println("Enter directory path: ");
+		String dir = reader.next();
+	  File root = new File(System.getProperty(dir)+"/tracedata/");
 
 		System.out.println("Enter number of clusters: ");
 		int clustNum = reader.nextInt();
@@ -28,7 +33,7 @@ public class TraceGenerator {
 		int writeNum = reader.nextInt();
 
 		reader.close();
-		
+
 		for(int lines = 10000;lines <= 90000; lines += 20000) {
 		String fileName = "trace"+lines+".txt";
 		Path fullPath = new File(root, fileName).toPath();
@@ -82,11 +87,10 @@ public class TraceGenerator {
 			bw.close();
 			System.out.println("finish");
 		}
-		
+
 		catch (java.io.IOException ex) {
 			ex.printStackTrace();
 		}
 	}
 	}
 }
-

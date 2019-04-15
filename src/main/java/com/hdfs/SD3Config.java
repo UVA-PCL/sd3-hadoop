@@ -12,7 +12,7 @@ public class SD3Config {
     private static String filePrefix = "file/data/";
     private static String filePostfix = ".txt";
     private static int listenerPort = 22222;
-    private static String traceDataRoot = System.getProperty("user.dir")+"/tracedata/";
+    //private static String traceDataRoot = System.getProperty("user.dir")+"/tracedata/";
     private static String auditLog = System.getProperty("user.dir")+"/hadoop-2.7.7/logs/hdfs-audit.log";
 
     public static String getTraceDataRoot() {
@@ -47,7 +47,7 @@ public class SD3Config {
     public static String getLocalClusterIP() {
         return clusterToIp.get(localCluster);
     }
-    
+
     public static void setClusterIPs(String[] ips) {
         int i = 1;
         for (String ip : ips) {
@@ -56,7 +56,7 @@ public class SD3Config {
             ++i;
         }
     }
-    
+
     public static int ipToClusterNumber(String ip) {
         if (ipToCluster.containsKey(ip)) {
             return ipToCluster.get(ip);
