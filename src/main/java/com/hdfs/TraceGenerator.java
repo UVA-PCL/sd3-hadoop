@@ -14,7 +14,9 @@ public class TraceGenerator {
 
 	public static void main(String[] args) {
 
-		Scanner reader = new Scanner(System.in);
+		if(args.length==1) {
+			root = new File(args[0]+"/tracedata/");
+		}
 
                 System.out.println("root = " + root);
 
@@ -28,7 +30,7 @@ public class TraceGenerator {
 		int writeNum = reader.nextInt();
 
 		reader.close();
-		
+
 		for(int lines = 10000;lines <= 90000; lines += 20000) {
 		String fileName = "trace"+lines+".txt";
 		Path fullPath = new File(root, fileName).toPath();
@@ -82,11 +84,10 @@ public class TraceGenerator {
 			bw.close();
 			System.out.println("finish");
 		}
-		
+
 		catch (java.io.IOException ex) {
 			ex.printStackTrace();
 		}
 	}
 	}
 }
-

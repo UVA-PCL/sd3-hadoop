@@ -58,7 +58,6 @@ public class SD3Config {
 
     public static String getLocalClusterIP() {
         return clusterToIp.get(localCluster);
-    }
     
     public static void setClusterIPs(String[] hosts) throws UnknownHostException {
         int i = 1;
@@ -70,7 +69,7 @@ public class SD3Config {
             ++i;
         }
     }
-    
+
     public static int ipToClusterNumber(String ip) {
         if (ipToCluster.containsKey(ip)) {
             return ipToCluster.get(ip);
