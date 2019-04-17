@@ -7,6 +7,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 
 public class Speaker implements Runnable{
+        private static final boolean DEBUG = true;
 
 	Socket talkSocket;
 	Cluster cluster;
@@ -40,6 +41,7 @@ public class Speaker implements Runnable{
 
 	private String processRequest(String request) throws IOException
 	{
+                if (DEBUG) System.out.println("Speaker got request " + request);
 		String ret = null;
 
 		String original_cluster_ip = talkSocket.getInetAddress().toString().split("/")[1];
@@ -65,7 +67,7 @@ public class Speaker implements Runnable{
 					String[] replica_clusters = clusters_str.split(",");
 					for(int i=0;i<replica_clusters.length;i++) {
 						//System.out.println("delete "+file_path+" copy on "+replica_clusters[i]);
-						new Deleter("hdfs://"+replica_clusters[i]+file_path).start();
+						new Deleter(replica_clusters[i]+file_path).start();
 						InetSocketAddress server = Helper.createSocketAddress(replica_clusters[i].split(":")[0]+":22222");
 						Helper.sendRequest(server, "UPDATE_REMOTE_FILE,"+file_path);
 					}

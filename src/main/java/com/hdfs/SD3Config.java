@@ -1,19 +1,27 @@
 package com.hdfs;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class SD3Config {
+    private static final boolean DEBUG = true;
     private static final Map<String, Integer> ipToCluster = new HashMap<String, Integer>();
     private static final Map<Integer, String> clusterToIp = new HashMap<Integer, String>();
     private static int localCluster = 0;
     private static String filePrefix = "file/data/";
     private static String filePostfix = ".txt";
     private static int listenerPort = Integer.parseInt((String) System.getProperties().getOrDefault("sd3.listener-port", "22222"));
+    private static int hdfsPort = Integer.parseInt((String) System.getProperties().getOrDefault("sd3.hdfs-port", "9000"));
     private static String traceDataRoot = System.getProperty("sd3.tracedata");
     private static String auditLog = System.getProperty("sd3.audit-log");
+
+    private static String hostToIp(String host) throws UnknownHostException {
+        return InetAddress.getByName(host).toString().split("/")[1];
+    }
 
     public static int getListenerPort() {
         return listenerPort;
@@ -33,7 +41,7 @@ public class SD3Config {
 
     public static InetSocketAddress[] getRemoteListeners() {
         ArrayList<InetSocketAddress> result = new ArrayList<InetSocketAddress>();
-        for (int id = 1; id < ipToCluster.size(); ++id) {
+        for (int id = 1; id <= ipToCluster.size(); ++id) {
             if (id == localCluster) continue;
             result.add(getListenerForCluster(id));
         }
@@ -52,9 +60,11 @@ public class SD3Config {
         return clusterToIp.get(localCluster);
     }
     
-    public static void setClusterIPs(String[] ips) {
+    public static void setClusterIPs(String[] hosts) throws UnknownHostException {
         int i = 1;
-        for (String ip : ips) {
+        for (String host : hosts) {
+            String ip = hostToIp(host);
+            if (DEBUG) System.out.println("cluster " + i + ": " + ip);
             ipToCluster.put(ip, i);
             clusterToIp.put(i, ip);
             ++i;
@@ -82,11 +92,11 @@ public class SD3Config {
     }
 
     public static String getHdfsRootFor(int clusterNumber) {
-        return "hdfs://" + clusterToIp.get(clusterNumber) + ":9000/";
+        return "hdfs://" + clusterToIp.get(clusterNumber) + ":" + hdfsPort + "/";
     }
 
     public static String getPathForOnCluster(int clusterNumber, String file) {
-        return "hdfs://" + clusterToIp.get(clusterNumber) + ":9000/" + filePrefix + file + filePostfix;
+        return "hdfs://" + clusterToIp.get(clusterNumber) + ":" + hdfsPort + "/" + filePrefix + file + filePostfix;
     }
 
     public static String getLocalPathFor(String file) {

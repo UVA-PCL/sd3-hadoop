@@ -10,15 +10,17 @@ import org.apache.hadoop.ipc.RemoteException;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class ReadTrace {
+        private static final boolean DEBUG = true;
 
 	int total_bandwidth;
 	
@@ -59,11 +61,17 @@ public class ReadTrace {
                 in = fs.open(new Path(uri));
 
 				byte[] file_buffer = new byte[length];
-				int count = in.read(file_buffer);
-				if (count < length) {
-					throw new RuntimeException("Underlength read of " + file);
-				}
+                                int offset = 0;
+                                int count = 0;
+                                if (DEBUG) System.out.println("about to read " + uri);
+                                while (count < length) {
+                                    int new_count = in.read(file_buffer, offset, length - offset);
+                                    if (DEBUG) System.out.println("read " + new_count + "for " + uri);
+                                    count += new_count;
+                                    if (new_count <= 0) break;
+                                }
 
+                                if (DEBUG) System.out.println("read " + count +  " and expected " + length);
 
 				total_bandwidth[0] += file_buffer.length;
 				//IOUtils.copyBytes(in, System.out, 4096, false);
@@ -77,11 +85,23 @@ public class ReadTrace {
                                 uri = SD3Config.getHomePathFor(file);
 				try {
 					FileSystem fs = FileSystem.get(URI.create(uri), conf);
-                                        in = fs.open(new Path(uri));
+                                        Path p = new Path(uri);
+                                        in = fs.open(p);
+				FileStatus status = fs.getFileStatus(p);
+				int length = (int) status.getLen();
                                             
 
-					byte[] file_buffer = new byte[in.available()];
-					in.read(file_buffer);
+					byte[] file_buffer = new byte[length];
+                                int count = 0;
+                                int offset = 0;
+                                if (DEBUG) System.out.println("[remote] about to read " + uri);
+                                while (count < length) {
+                                    int new_count = in.read(file_buffer, offset, length - offset);
+                                    if (DEBUG) System.out.println("[remote] read " + new_count + "for " + uri);
+                                    count += new_count;
+                                    if (new_count <= 0) break;
+                                }
+                                if (DEBUG) System.out.println("read " + count +  " and expected " + length);
 					total_bandwidth[1] += Long.valueOf(file_buffer.length);
 
 					//System.out.println(localhost + " opened file " + file + " in " + original_cluster);
@@ -92,8 +112,8 @@ public class ReadTrace {
 				}
 
 				catch (IOException ex1) {
-					//ex1.printStackTrace();
-					//System.out.println("File " + file + " not found in original hdfs");
+					ex1.printStackTrace();
+					System.out.println("File " + file + " not accessible in original hdfs");
 					//System.out.println(ex1);
 				}
 
@@ -215,7 +235,7 @@ public class ReadTrace {
 		}
 	}
 	
-	public static void operate_Trace(String[] args,Cluster cluster) throws InterruptedException {
+	public static void operate_Trace(String[] args,Cluster cluster) throws InterruptedException, IOException {
     ArrayList<Long> localLatencies = new ArrayList<Long>();
     ArrayList<Long> remoteLatencies = new ArrayList<Long>();
     long[] total_bandwidth = { 0, 0 };
@@ -235,8 +255,7 @@ public class ReadTrace {
     long startTime = System.nanoTime();
     ExecutorService pool = Executors.newFixedThreadPool(1);
 
-    try {
-        BufferedReader br = new BufferedReader(new FileReader(SD3Config.getTraceDataRoot()+args[1]));
+        BufferedReader br = new BufferedReader(new FileReader(SD3Config.getTraceDataRoot()+"/"+args[1]));
         String line = br.readLine();
         int line_num=1;
         while (line != null) {
@@ -254,15 +273,7 @@ public class ReadTrace {
 			}
 
 			br.close();
-		}
 
-		catch (FileNotFoundException ex) {
-			ex.printStackTrace();
-			//System.out.println("Unable to open file '" + traceFile + "'");
-		} catch (IOException ex) {
-			ex.printStackTrace();
-			//System.out.println("Error reading file '" + traceFile + "'");
-		}
 
 		pool.shutdown();
 		// while (!pool.isTerminated()) {
@@ -314,7 +325,7 @@ public class ReadTrace {
 	}
 	
 
-	public static void main(String[] args) throws InterruptedException {
+	public static void main(String[] args) throws InterruptedException, IOException {
 		
 		if(args.length != 5) {
 			System.out.println("error: number of arguments, arg[0] should be cluster number, arg[1] should be trace file name");
@@ -325,6 +336,8 @@ public class ReadTrace {
                 SD3Config.setLocalCluster(Integer.parseInt(args[0]));
                 SD3Config.setClusterIPs(new String[]{args[2], args[3], args[4]});
                 cluster = new Cluster(SD3Config.getLocalClusterIP());
+                
+                System.out.println("Starting at " + DateFormat.getInstance().format(new Date()));
 		
 		Listener listener = new Listener(cluster);
 		listener.start();
@@ -341,6 +354,7 @@ public class ReadTrace {
 		System.out.println("Replicating finished.");
 		
 		while(cluster.others__partial_replication_unfinish != 0) {
+                        if (DEBUG) System.out.println("waiting for others to finish");
 			Thread.sleep(300);
 		}
 		
@@ -363,6 +377,7 @@ public class ReadTrace {
 		operate_Trace(args,cluster);
 		
 		System.out.println("Run over.");
+                System.out.println("Finishing at " + DateFormat.getInstance().format(new Date()));
 		System.exit(0);
 		//}
 		

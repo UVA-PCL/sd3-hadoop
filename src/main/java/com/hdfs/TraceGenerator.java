@@ -8,13 +8,15 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class TraceGenerator {
-	private static File root = new File(System.getProperty("user.dir")+"/tracedata/");
+	private static String root = SD3Config.getTraceDataRoot();
 	//private static final String fileName = "trace5000.txt";
 	//private static int lines = 10000;
 
 	public static void main(String[] args) {
 
 		Scanner reader = new Scanner(System.in);
+
+                System.out.println("root = " + root);
 
 		System.out.println("Enter number of clusters: ");
 		int clustNum = reader.nextInt();

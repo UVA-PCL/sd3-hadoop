@@ -10,9 +10,6 @@ import java.net.URI;
 
 public class Deleter extends Thread{
 
-	final static String cluster1 = "128.143.69.231:9000";//shen-18 file 10-19
-	final static String cluster2 = "128.143.69.230:9000";//shen-19 file 20-29
-	final static String cluster3 = "128.143.69.229:9000";//shen-20 file 30-39
 	String file_path;
 	
 	public Deleter(String path) {
@@ -47,9 +44,4 @@ public class Deleter extends Thread{
 		System.out.println("delete file "+file_path);
 		
 	}
-	
-	public static void main(String[] args) {
-		new Deleter("hdfs://"+cluster1+"/file/data/file20.txt").start();
-	}
-	
 }
