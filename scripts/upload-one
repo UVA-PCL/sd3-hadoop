@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -x
+
+
+source $(dirname $0)/config.sh
+ls -l $TRACE_DATA
+cd $EXPERIMENT_DIR/hadoop-*
+which=$1
+bin/hdfs dfs -mkdir hdfs://${HOST}:$HDFS_PORT/file/
+bin/hdfs dfs -mkdir hdfs://${HOST}:$HDFS_PORT/file/data/
+bin/hdfs dfs -copyFromLocal $TRACE_DATA/file${which}* hdfs://${HOST}:$HDFS_PORT/file/data/

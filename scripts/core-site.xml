@@ -1,0 +1,13 @@
+<configuration>
+    <property>
+        <name>fs.defaultFS</name>
+        <value>hdfs://@HOST@:9001</value>
+    </property>
+
+
+    <property>
+        <name>hadoop.tmp.dir</name>
+        <value>file:@EXPERIMENT_DIR@/hadoop_tmp</value>
+    </property>
+</configuration>
+

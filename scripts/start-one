@@ -1,0 +1,8 @@
+#!/bin/bash
+
+source $(dirname $0)/config.sh
+
+nohup $EXPERIMENT_DIR/hadoop-*/bin/hdfs namenode >$EXPERIMENT_DIR/namenode-log &
+echo $! > $EXPERIMENT_DIR/namenode-pid
+nohup $EXPERIMENT_DIR/hadoop-*/bin/hdfs datanode >$EXPERIMENT_DIR/datanode-log &
+echo $! > $EXPERIMENT_DIR/datanode-pid

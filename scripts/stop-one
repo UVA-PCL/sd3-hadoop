@@ -1,0 +1,6 @@
+#!/bin/bash
+
+source $(dirname $0)/config.sh
+
+kill $(cat $EXPERIMENT_DIR/datanode-pid)
+kill $(cat $EXPERIMENT_DIR/namenode-pid)

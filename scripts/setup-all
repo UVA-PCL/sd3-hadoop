@@ -1,0 +1,5 @@
+source $(dirname $0)/config.sh
+
+for host in "${EXPERIMENT_HOSTS[@]}"; do
+    ssh $host $SCRIPT_DIR/setup-local
+done

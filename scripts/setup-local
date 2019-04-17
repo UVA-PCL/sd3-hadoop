@@ -1,0 +1,15 @@
+#!/bin/bash
+set -ex
+. $(dirname $0)/config.sh
+
+mkdir -p $EXPERIMENT_DIR
+rm -r $EXPERIMENT_DIR/hadoop_tmp
+tar -C $EXPERIMENT_DIR -axvf $HADOOP_TGZ
+for file in hdfs-site.xml core-site.xml hadoop-env.sh log4j.properties; do
+    sed \
+        -e "s!@EXPERIMENT_DIR@!${EXPERIMENT_DIR}!g" \
+        -e "s!@HOST@!${HOST}!g" \
+        < $SCRIPT_DIR/$file \
+        > $EXPERIMENT_DIR/hadoop-*/etc/hadoop/$file
+done
+$EXPERIMENT_DIR/hadoop-*/bin/hdfs namenode -format
