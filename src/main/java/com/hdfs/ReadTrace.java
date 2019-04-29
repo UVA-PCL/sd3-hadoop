@@ -21,6 +21,9 @@ import java.util.concurrent.TimeUnit;
 
 public class ReadTrace {
         private static final boolean DEBUG = true;
+        private static String now() {
+        	return DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG).format(new Date());
+		}
 
 	int total_bandwidth;
 	
@@ -41,6 +44,7 @@ public class ReadTrace {
 
 		@Override
 		public void run() {
+			if (DEBUG) System.out.println("read " +  file);
 
 			Configuration conf = new Configuration();
 
@@ -63,15 +67,11 @@ public class ReadTrace {
 				byte[] file_buffer = new byte[length];
                                 int offset = 0;
                                 int count = 0;
-                                if (DEBUG) System.out.println("about to read " + uri);
                                 while (count < length) {
                                     int new_count = in.read(file_buffer, offset, length - offset);
-                                    if (DEBUG) System.out.println("read " + new_count + "for " + uri);
                                     count += new_count;
                                     if (new_count <= 0) break;
                                 }
-
-                                if (DEBUG) System.out.println("read " + count +  " and expected " + length);
 
 				total_bandwidth[0] += file_buffer.length;
 				//IOUtils.copyBytes(in, System.out, 4096, false);
@@ -79,7 +79,7 @@ public class ReadTrace {
 				localLatencies.add(newLat);
 			} catch (IOException ex) {
 				//ex.printStackTrace();
-				//System.out.println("File " + file + " not found in local hdfs");
+				System.out.println("File " + file + " not found in local hdfs");
 
 				// if file not found in local hdfs
                                 uri = SD3Config.getHomePathFor(file);
@@ -94,14 +94,11 @@ public class ReadTrace {
 					byte[] file_buffer = new byte[length];
                                 int count = 0;
                                 int offset = 0;
-                                if (DEBUG) System.out.println("[remote] about to read " + uri);
                                 while (count < length) {
                                     int new_count = in.read(file_buffer, offset, length - offset);
-                                    if (DEBUG) System.out.println("[remote] read " + new_count + "for " + uri);
                                     count += new_count;
                                     if (new_count <= 0) break;
                                 }
-                                if (DEBUG) System.out.println("read " + count +  " and expected " + length);
 					total_bandwidth[1] += Long.valueOf(file_buffer.length);
 
 					//System.out.println(localhost + " opened file " + file + " in " + original_cluster);
@@ -208,7 +205,7 @@ public class ReadTrace {
 		}
 	}
 	public static void write_File(String uri) {
-		//System.out.println("write file "+uri);
+		if (DEBUG) System.out.println("write file "+uri);
 		Configuration conf = new Configuration();
 		conf.set("fs.hdfs.impl", org.apache.hadoop.hdfs.DistributedFileSystem.class.getName());
 		conf.set("fs.file.impl", org.apache.hadoop.fs.LocalFileSystem.class.getName());
@@ -231,31 +228,35 @@ public class ReadTrace {
 			System.out.println("Collision of file write happens. Request failed.");
 		}
 		catch(IOException ioe) {
+			System.out.println("Could not write file " + uri);
 			ioe.printStackTrace();
 		}
 	}
+
+	private static void clearAuditLog() {
+		PrintWriter writer = null;
+		try {
+			writer = new PrintWriter(SD3Config.getAuditLog());
+			writer.print("");
+		} catch (FileNotFoundException e) {
+			System.err.println("Warning: Error clearing audit log");
+			e.printStackTrace();
+		} finally {
+			writer.close();
+		}
+	}
 	
-	public static void operate_Trace(String[] args,Cluster cluster) throws InterruptedException, IOException {
+	public static void operate_Trace(String traceFile,Cluster cluster) throws InterruptedException, IOException {
     ArrayList<Long> localLatencies = new ArrayList<Long>();
     ArrayList<Long> remoteLatencies = new ArrayList<Long>();
     long[] total_bandwidth = { 0, 0 };
     // total_bandwidth[0] is local, [1] is remote
 
-    PrintWriter writer = null;
-    try {
-        writer = new PrintWriter(SD3Config.getAuditLog());
-        writer.print("");
-    } catch (FileNotFoundException e) {
-        System.err.println("Warning: Error clearing audit log");
-        e.printStackTrace();
-    } finally {
-        writer.close();
-    }
 
     long startTime = System.nanoTime();
     ExecutorService pool = Executors.newFixedThreadPool(1);
 
-        BufferedReader br = new BufferedReader(new FileReader(SD3Config.getTraceDataRoot()+"/"+args[1]));
+        BufferedReader br = new BufferedReader(new FileReader(SD3Config.getTraceDataRoot()+"/"+traceFile));
         String line = br.readLine();
         int line_num=1;
         while (line != null) {
@@ -323,10 +324,68 @@ public class ReadTrace {
 		System.out.println("remote bandwidth usage for reads: ");
 		System.out.println(total_bandwidth[1]);
 	}
+
+	public static void runExperiment(String traceFile, Cluster cluster, boolean cleanFirst, boolean replicate, boolean replicateWithPolicy) throws InterruptedException, IOException {
+		System.out.println("At " + now() + ": Run trace "  + traceFile + " " +
+				(replicate ?
+						(replicateWithPolicy ? "with replication policy" : "with unfiltered replication") :
+						 "without replication"
+				)
+		);
+		if (cleanFirst) {
+			DeleteExtra.clearExtraReplicasOnCluster(SD3Config.getLocalCluster());
+			clearAuditLog(); // FIXME: previously deliberately(?) done, but possibly not before scheduleAtFixedRate?
+		}
+		ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+		if (replicate) {
+			executor.scheduleAtFixedRate(
+					new RunParseLog(Calendar.getInstance().getTime(), SD3Config.getReplicateHistoryInterval(), cluster,replicateWithPolicy),
+					0, SD3Config.getReplicateInterval(), TimeUnit.SECONDS);
+		}
+		operate_Trace(traceFile, cluster);
+		for (InetSocketAddress listener: SD3Config.getRemoteListeners()) {
+			Helper.sendRequest(listener, "FINISH," + SD3Config.getLocalCluster());
+		}
+		System.out.println("Waiting for other clusters to finish");
+		cluster.waitForRemotes();
+		if (replicate) {
+			executor.shutdown();
+		}
+	}
 	
 
-	public static void main(String[] args) throws InterruptedException, IOException {
-		
+	public static void main(String[] args) throws Exception {
+		if(args.length != 5) {
+			System.out.println("error: number of arguments, arg[0] should be cluster number, arg[1] should be trace file name");
+			System.out.println("args[2] to args[4] is cluster IP address");
+			System.exit(0);
+		}
+		String traceFile = args[1];
+		SD3Config.setLocalCluster(Integer.parseInt(args[0]));
+		SD3Config.setClusterIPs(new String[]{args[2], args[3], args[4]});
+		Cluster cluster;
+		cluster = new Cluster(SD3Config.getLocalClusterIP());
+
+		System.out.println("Starting at " + now());
+		Listener listener = new Listener(cluster);
+		listener.start();
+
+		/* test the trace with
+		      no replication,
+		      replication according to the threshold
+		      replication of everything
+
+		   in each case, replication is done "live", by periodically scanning the audit log and making
+		   new decisions about replication
+		 */
+		runExperiment(traceFile, cluster, true, false, false);
+		runExperiment(traceFile, cluster, true, true, true);
+		runExperiment(traceFile, cluster, true, true, false);
+	}
+
+	/*
+	public static void old_main(String[] args) throws InterruptedException, IOException {
+
 		if(args.length != 5) {
 			System.out.println("error: number of arguments, arg[0] should be cluster number, arg[1] should be trace file name");
 			System.out.println("args[2] to args[4] is cluster IP address");
@@ -337,51 +396,51 @@ public class ReadTrace {
                 SD3Config.setClusterIPs(new String[]{args[2], args[3], args[4]});
                 cluster = new Cluster(SD3Config.getLocalClusterIP());
                 
-                System.out.println("Starting at " + DateFormat.getInstance().format(new Date()));
-		
+                System.out.println("Starting at " + now());
 		Listener listener = new Listener(cluster);
 		listener.start();
 		//while(true) {
 		
 		System.out.println("Execute trace without policy");
-		operate_Trace(args,cluster);
+		operate_Trace(args[1],cluster);
 		
-		ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-		System.out.println("Execution finished. Begin replicating files under the policy.");	        
-		executor.scheduleAtFixedRate(new RunParseLog(Calendar.getInstance().getTime(), 0, args,cluster,true),
-											0, 3600, TimeUnit.SECONDS);
 
-		System.out.println("Replicating finished.");
-		
 		while(cluster.others__partial_replication_unfinish != 0) {
-                        if (DEBUG) System.out.println("waiting for others to finish");
+            if (DEBUG) System.out.println(now() + ": waiting for others to finish (partial replication)");
 			Thread.sleep(300);
 		}
-		
+
+		System.out.println("Execution finished. Begin replicating files under the policy.");
+		ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+		executor.scheduleAtFixedRate(new RunParseLog(Calendar.getInstance().getTime(), 0, args,cluster,true),
+				0, SD3Config.getReplicateInterval(), TimeUnit.SECONDS);
+
+
 		System.out.println("All finished. Begin executing the trace.");
-		operate_Trace(args,cluster);
-		
+		operate_Trace(args[1],cluster);
+		executor.shutdown();
+
 		System.out.println("Execution finished. Begin replicating all the files");
 		
 		executor.scheduleAtFixedRate(new RunParseLog(Calendar.getInstance().getTime(), 0, args,cluster,false),
-				0, 3600, TimeUnit.SECONDS);
-		System.out.println("Replicating finished.");
+				0, SD3Config.getReplicateInterval(), TimeUnit.SECONDS);
 
 		System.out.println("Send finish all replication message to others. Waiting.");
 		while(cluster.others__all_replication_unfinish != 0) {
+			if (DEBUG) System.out.println(now() + ": waiting for others to finish (all replication)");
 			Thread.sleep(300);
 		}
 		
 		System.out.println("All finished. Begin executing the trace.");
 		
 		operate_Trace(args,cluster);
+		executor.shutdown();
 		
 		System.out.println("Run over.");
                 System.out.println("Finishing at " + DateFormat.getInstance().format(new Date()));
 		System.exit(0);
 		//}
 		
-		
-
 	}
+	*/
 }

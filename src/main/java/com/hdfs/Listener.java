@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
+import java.util.Date;
+import java.text.DateFormat;
 
 
 public class Listener extends Thread {
@@ -21,7 +22,7 @@ public class Listener extends Thread {
 		try {
 			serverSocket = new ServerSocket();
                         serverSocket.setReuseAddress(true);
-                        serverSocket.bind(new InetSocketAddress(SD3Config.getListenerPort()));
+                        serverSocket.bind(new InetSocketAddress(SD3Config.getListenerPort()), 50);
 		} catch (IOException e) {
 			throw new RuntimeException("\nCannot open listener port "+SD3Config.getListenerPort()+". Now exit.\n", e);
 		}
@@ -33,7 +34,11 @@ public class Listener extends Thread {
 		while (alive) {
 			Socket talkSocket = null;
 			try {
+				if (DEBUG)
+					System.out.println("At " + DateFormat.getInstance().format(new Date()) + ": Waiting for connection on " + serverSocket.getLocalSocketAddress());
 				talkSocket = serverSocket.accept();
+				if (DEBUG)
+					System.out.println("Accepted connection on " + talkSocket.getLocalSocketAddress() + " from " + talkSocket.getRemoteSocketAddress());
 			} catch (IOException e) {
 				throw new RuntimeException(
 						"Cannot accepting connection", e);

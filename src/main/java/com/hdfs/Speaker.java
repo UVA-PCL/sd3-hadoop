@@ -86,11 +86,9 @@ public class Speaker implements Runnable{
 			}
 
 		}
-		else if(request.startsWith("FINISH_PR")) {
-			cluster.others__partial_replication_unfinish--;
-		}
-		else if(request.startsWith("FINISH_AR")) {
-			cluster.others__all_replication_unfinish--;
+		else if (request.startsWith("FINISH,")) {
+			int id = Integer.parseInt(request.split(",")[1]);
+			cluster.finishRemote(id);
 		}
 
 

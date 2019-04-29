@@ -64,20 +64,13 @@ public class ParseLog{
                     System.out.println("Parse Error!");
                 }
 
-                if(true){
+                if(interval == 0 || getDateDiff(oldTime, curTime, TimeUnit.SECONDS) < interval){
                 	//line = br.readLine();
                 	LogEntry newLE = new LogEntry(temp[0] + " " + temp[1], temp[7].substring(4), Cmd.valueOf(temp[8].substring(4)), temp[9].substring(4));
                     records.add(newLE);
                     //line = br.readLine();
                     //System.out.println("add to log");
 
-                }
-                	
-                else{
-                	//System.out.println("Log entry added.");
-                	LogEntry newLE = new LogEntry(temp[0] + " " + temp[1], temp[7].substring(4), Cmd.valueOf(temp[8].substring(4)), temp[9].substring(4));
-                    records.add(newLE);
-                    //line = br.readLine();
                 }
                 line = br.readLine();
                 //System.out.println("Press Any Key To Continue...");

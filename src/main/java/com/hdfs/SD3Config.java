@@ -18,10 +18,15 @@ public class SD3Config {
     private static int hdfsPort = Integer.parseInt((String) System.getProperties().getOrDefault("sd3.hdfs-port", "9000"));
     private static String traceDataRoot = System.getProperty("sd3.tracedata");
     private static String auditLog = System.getProperty("sd3.audit-log");
+    private static int replicateInterval = Integer.parseInt(System.getProperty("sd3.replicate-interval", "60"));
+    private static int replicateHistoryInterval = Integer.parseInt(System.getProperty("sd3.replicate-history-interval", "3600"));
 
     private static String hostToIp(String host) throws UnknownHostException {
         return InetAddress.getByName(host).toString().split("/")[1];
     }
+
+    public static int getReplicateInterval() { return replicateInterval; }
+    public static int getReplicateHistoryInterval() { return replicateHistoryInterval; }
 
     public static int getListenerPort() {
         return listenerPort;
@@ -58,6 +63,7 @@ public class SD3Config {
 
     public static String getLocalClusterIP() {
         return clusterToIp.get(localCluster);
+    }
     
     public static void setClusterIPs(String[] hosts) throws UnknownHostException {
         int i = 1;
@@ -116,5 +122,9 @@ public class SD3Config {
             idPart = lastComponent;
         }
         return Integer.parseInt(idPart.substring(0, 1));
+    }
+
+    public static int getMaxClusterNumber() {
+        return ipToCluster.size();
     }
 }

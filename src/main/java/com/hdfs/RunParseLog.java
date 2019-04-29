@@ -21,7 +21,7 @@ public class RunParseLog implements Runnable {
     public boolean usePolicy;
     
     
-    RunParseLog(Date curTime, int interval, String[] args,Cluster c, boolean usePolicy){
+    RunParseLog(Date curTime, int interval, Cluster c, boolean usePolicy){
         this.cluster = c;
     	this.curTime = curTime;
     	this.interval = interval;
@@ -31,6 +31,7 @@ public class RunParseLog implements Runnable {
     
     public void run() {
         try {
+            curTime = new Date();
             ArrayList<String[]> trimmed_records = null;
             double thold = 0.0;
             double replica_percent = 0.0;
@@ -84,18 +85,20 @@ public class RunParseLog implements Runnable {
                             }
             }
         
-            System.out.println("about to update");	
+            System.out.println("about to update");
             update(chosen_trimmed_records);
-            System.out.println("about to get remote listeners");	
-            InetSocketAddress[] listeners = SD3Config.getRemoteListeners();
-            for (InetSocketAddress listener: listeners) {
-                if (usePolicy) {
-                    Helper.sendRequest(listener, "FINISH_PR");
-                } else {
-                    Helper.sendRequest(listener, "FINISH_AR");
+            if (false) {
+                System.out.println("about to get remote listeners");
+                InetSocketAddress[] listeners = SD3Config.getRemoteListeners();
+                for (InetSocketAddress listener : listeners) {
+                    if (usePolicy) {
+                        Helper.sendRequest(listener, "FINISH_PR");
+                    } else {
+                        Helper.sendRequest(listener, "FINISH_AR");
+                    }
                 }
+                System.out.println("Send finish partial replication message to others. Waiting.");
             }
-            System.out.println("Send finish partial replication message to others. Waiting.");
             
             /*
             System.out.println("local file replica on the remote cluster");

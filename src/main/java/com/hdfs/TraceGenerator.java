@@ -12,13 +12,8 @@ public class TraceGenerator {
 	//private static final String fileName = "trace5000.txt";
 	//private static int lines = 10000;
 
-	public static void main(String[] args) {
-
-		if(args.length==1) {
-			root = new File(args[0]+"/tracedata/");
-		}
-
-                System.out.println("root = " + root);
+	public static void main(String[] args) throws Exception {
+		Scanner reader = new Scanner(System.in);
 
 		System.out.println("Enter number of clusters: ");
 		int clustNum = reader.nextInt();
