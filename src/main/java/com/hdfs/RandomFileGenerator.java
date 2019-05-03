@@ -3,11 +3,10 @@ package com.hdfs;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.util.Scanner;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Random;
-
+import java.util.Scanner;
 
 
 public class RandomFileGenerator {
@@ -25,7 +24,7 @@ public class RandomFileGenerator {
         // make sure file exists
         Files.createDirectories(fullPath.getParent());
         try (BufferedWriter bw = Files.newBufferedWriter(fullPath)) {
-        	bw.write("VERSION:1\n");
+            bw.write("VERSION:1\n");
             for (int i = 0; i < lines; ++i) {
                 String line = generateRandomString(20);
                 bw.write(line);
@@ -42,7 +41,7 @@ public class RandomFileGenerator {
         StringBuilder buffer = new StringBuilder(targetStringLength);
         for (int i = 0; i < targetStringLength; i++) {
             int randomLimitedInt = leftLimit + (int)
-              (random.nextFloat() * (rightLimit - leftLimit + 1));
+                    (random.nextFloat() * (rightLimit - leftLimit + 1));
             buffer.append((char) randomLimitedInt);
         }
         String generatedString = buffer.toString();
@@ -61,13 +60,13 @@ public class RandomFileGenerator {
         int file_n = reader.nextInt();
         reader.close();
 
-        for(int n = 1; n <= cluster_n; n++) {
-        	for(int i = 0;i <= (file_n-1);i++){
-        		//int line = ran.nextInt(10000000-1000000+1) + 1000000;
-        		int index = file_n*cluster_n + i;
-        		new RandomFileGenerator("file" +index+".txt", 100000).generate();
-        		System.out.println(i);
-        	}
+        for (int n = 1; n <= cluster_n; n++) {
+            for (int i = 0; i <= (file_n - 1); i++) {
+                //int line = ran.nextInt(10000000-1000000+1) + 1000000;
+                int index = file_n * cluster_n + i;
+                new RandomFileGenerator("file" + index + ".txt", 100000).generate();
+                System.out.println(i);
+            }
         }
     }
 

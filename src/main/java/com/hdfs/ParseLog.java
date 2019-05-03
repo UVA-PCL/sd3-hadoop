@@ -11,21 +11,21 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
-public class ParseLog{
+public class ParseLog {
     public ArrayList<LogEntry> records;
     private String filename;
     private Date curTime;
     private int interval;
 
-    ParseLog(String file, Date curTime, int interval){
+    ParseLog(String file, Date curTime, int interval) {
         this.records = new ArrayList<>();
         this.filename = file;
         this.curTime = curTime;
         this.interval = interval;
     }
 
-    public void readFile(){
-    	try {
+    public void readFile() {
+        try {
             BufferedReader br = new BufferedReader(new FileReader(filename));
             String line = br.readLine();
             while (line != null) {
@@ -52,21 +52,19 @@ public class ParseLog{
 				Entry 11 is: perm=null
 				Entry 12 is: proto=rpc
                 */
-                
+
                 //LogEntry(String time, String ip, Cmd c, String path)
-                Date oldTime  = curTime;
-                
+                Date oldTime = curTime;
+
                 try {
-                    oldTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(line.substring(0,19));
-                }
-                
-                catch (ParseException PE){
+                    oldTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(line.substring(0, 19));
+                } catch (ParseException PE) {
                     System.out.println("Parse Error!");
                 }
 
-                if(interval == 0 || getDateDiff(oldTime, curTime, TimeUnit.SECONDS) < interval){
-                	//line = br.readLine();
-                	LogEntry newLE = new LogEntry(temp[0] + " " + temp[1], temp[7].substring(4), Cmd.valueOf(temp[8].substring(4)), temp[9].substring(4));
+                if (interval == 0 || getDateDiff(oldTime, curTime, TimeUnit.SECONDS) < interval) {
+                    //line = br.readLine();
+                    LogEntry newLE = new LogEntry(temp[0] + " " + temp[1], temp[7].substring(4), Cmd.valueOf(temp[8].substring(4)), temp[9].substring(4));
                     records.add(newLE);
                     //line = br.readLine();
                     //System.out.println("add to log");
@@ -76,99 +74,94 @@ public class ParseLog{
                 //System.out.println("Press Any Key To Continue...");
                 //new java.util.Scanner(System.in).nextLine();
             }
-        }
-    	
-    	
-        catch(FileNotFoundException ex) {
+        } catch (FileNotFoundException ex) {
             System.out.println(
                     "Unable to open file '" +
                             filename + "'");
-        }
-        catch(IOException ex) {
+        } catch (IOException ex) {
             System.out.println(
                     "Error reading file '"
                             + filename + "'");
         }
     }
-    
 
-    public void printAll(){
-        for(LogEntry le : records){
-        	System.out.println("Hello");
+
+    public void printAll() {
+        for (LogEntry le : records) {
+            System.out.println("Hello");
             System.out.println(le);
         }
     }
 
     public long getDateDiff(Date date1, Date date2, TimeUnit timeUnit) {
         long diffInMillies = date2.getTime() - date1.getTime();
-        return timeUnit.convert(diffInMillies,timeUnit);
+        return timeUnit.convert(diffInMillies, timeUnit);
     }
 
-    public ArrayList<String[]> getFrequency(double threshold){
+    public ArrayList<String[]> getFrequency(double threshold) {
         ArrayList<String[]> result = new ArrayList<>();
         HashMap<String, Integer> frequency = new HashMap<>();
-        for(LogEntry le : records){
-        	
-            String key = le.getIp() + " "+ le.getSrc();
-            if(frequency.containsKey(key)) {            	
-            	if(le.getCmd().equals(Cmd.open))
-            		frequency.put(key, frequency.get(key) + 1);
-            	else if(le.getCmd().equals(Cmd.create))
-            		frequency.put(key, frequency.get(key) - 1);
+        for (LogEntry le : records) {
+
+            String key = le.getIp() + " " + le.getSrc();
+            if (frequency.containsKey(key)) {
+                if (le.getCmd().equals(Cmd.open))
+                    frequency.put(key, frequency.get(key) + 1);
+                else if (le.getCmd().equals(Cmd.create))
+                    frequency.put(key, frequency.get(key) - 1);
+            } else {
+                if (le.getCmd().equals(Cmd.open))
+                    frequency.put(key, 1);
+                else if (le.getCmd().equals(Cmd.create))
+                    frequency.put(key, -1);
             }
-            else {
-            	if(le.getCmd().equals(Cmd.open))
-            		frequency.put(key,1);
-            	else if(le.getCmd().equals(Cmd.create))
-            		frequency.put(key,-1);
-            }
-            
+
         }
-        for(String k : frequency.keySet()){
-            if(frequency.get(k) >= threshold){
+        for (String k : frequency.keySet()) {
+            if (frequency.get(k) >= threshold) {
                 result.add(k.split(" "));
-            } 
+            }
         }
         return result;
     }
 
 
-    static class LogEntry{
+    static class LogEntry {
         private String cmdTime;
         private String ipAddress;
         private Cmd cmd;
         private String src;
 
-        LogEntry(String time, String ip, Cmd c, String path){
+        LogEntry(String time, String ip, Cmd c, String path) {
             cmdTime = time;
             ipAddress = ip;
             cmd = c;
             src = path;
         }
 
-        public String getTime(){
+        public String getTime() {
             return cmdTime;
         }
 
-        public String getIp(){
+        public String getIp() {
             return ipAddress;
         }
 
-        public Cmd getCmd(){
+        public Cmd getCmd() {
             return cmd;
         }
 
-        public String getSrc(){
+        public String getSrc() {
             return src;
         }
 
-        public String toString(){
+        public String toString() {
             return cmdTime + " " + ipAddress + " " + cmd + " " + src;
         }
 
     }
 
-    enum Cmd{
+    enum Cmd {
         open, create, delete, rename, mkdirs, listStatus, setReplication, setOwner, setPermission, getfileinfo
     }
 }

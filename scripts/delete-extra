@@ -1,0 +1,10 @@
+#!/bin/bash
+
+source $(dirname $0)/config.sh
+CLUSTER_ID=$1
+TRACE_FILE=$2
+LOG_FILE=$3
+
+set -x
+
+run_java com.hdfs.DeleteExtra "${EXPERIMENT_HOSTS[@]}"
