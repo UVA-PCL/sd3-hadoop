@@ -1,4 +1,4 @@
-package com.hdfs;
+package sd3;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;

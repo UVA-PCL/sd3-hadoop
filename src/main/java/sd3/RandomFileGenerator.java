@@ -1,4 +1,4 @@
-package com.hdfs;
+package sd3;
 
 import java.io.BufferedWriter;
 import java.io.File;
