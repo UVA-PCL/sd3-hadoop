@@ -1,38 +1,55 @@
-# SD3 Hadoop Research
-Senior Capstone for Azman Garcha - Research into SD3 using Apache Hadoop
+This is repository includes an implementation for experiments simulating
+Lin, Shen, and Chandler, "Selective Data Replication for Online Social Networks with Distributed Datacenters" built on top of Hadoop HDFS.
 
-This code creates a simulation of the SD3 system based on multiple single-node clusters within the Apache Hadoop system. The first part of this simulation can be done independently of the node set-up.
+To simulate the idea of having multiple distinct clusters, this prototype assumes that each cluster is its own HDFS instance (namenode and datanodes).
+Data is replicated on the granualirty of Hadoop files, and each file has a master copy, stored on a cluter identified by its name,
 
-PART 1 - PRELIMINARY SETUP
+To access replicated copies, an agent on one of the clusters, first tries to access the file locally, then tries to access it on its master copy.
+On each cluster, a thread monitors the Hadoop audit log and replicates files in accordance with the SD3-determined threshold.
 
-1. Use the RandomFileGenerator.java to generate random files for each cluster. The user must input the cluster number as well as the number of files for each cluster (1000 files per cluster is recommended to show the effect of the SD3 system). Each file will be named with file + number + extension (e.g., "file39.txt" corresponds to a file in cluster 3). The fileGenerator generates random text files with 100000 lines (used to simulate data artifacts of a significant, non-trivial, size)
+To use the tools in this repository
 
-2. Run TraceGenerator.java to generate random trace data. The files are stored in the ./cluster_file directory, and any custom directory can be specified through command-line arguments.
+*  build the Java portions with `mvn package`
+*  edit `scripts/config.sh` to correspond to your site and where you intend to run experiements. You should have passwordless
+   SSH access to each machine on which you want to run a cluster.
+  
 
-PART 2 - SETTING UP CLUSTERS/APACHE HADOOP
+Included in this repository:
 
-3. Setup clusters using whatever relevant data-nodes.
+*  a script to setting up an single-node hadoop cluster with an appropriate configuration file `scripts/setup-all`.
+   This assumes that the scripts directory is accessible on all the machines to be used for single-node clusters
+   (either it is on a shared network filesystem, or you copy over this repository manually). This
+   assumes you place a Hadoop binary trball for it to extract in a location specified in `scripts/config.sh`.
 
-4. enable hdfs audit loging from the configuration file by:
+*  a script to starting and stopping the Hadoop clusters configured with `setup-all` in `scripts/start-all` and
+   `scripts/stop-all`
 
-In hadoop-env.sh:
-export HDFS_AUDIT_LOGGER=INFO,RFAAUDIT
-export HDFS_ROOT_LOGGER=INFO,RFA
+*  a tool for generating random test files `scripts/file-generator` (Java code in sd3.RandomFileGenerator). This prompts for its parameters.
 
-In log4j.properties:
-hdfs.audit.logger=INFO,RFAAUDIT
-log4j.additivity.org.apache.hadoop.hdfs.AuditLogger=true
+*  a script for uploading the random test files, `scripts/upload-all`.
 
-5. Upload the files to corresponding cluster and also upload one copy of trace data to each cluster.
+*  a tool for generating a psuedorandom trace indicating which files are read from which cluster, that reads some files preferentially according to a distribution,
+   `scripts/trace-generator` (Java code in sd3.TraceGenerator).
+   This prompts for its parameters. The resulting trace will include lines indicating a cluster number to perform an operation,
+   a filename, and whether the operation is a read or write.
 
-6. Export ReadTrace.java to runnable jar files. Upload the jar file into each cluster.
+*  a tool for running  a trace simulatenously across each of the clusters, run as 
 
-7. About exporting the java file into jar files. I used eclipse.
-1).First add the configuration. Right click on project -> Run As -> Run Configurations and create a config.
-2).Then right click on the project in project explorer, select "Export". Then select "Runnable JAR file" under Java folder. Click "Next". Choose the "Launch configuration" as the Java file you want to export, such as "ReadTrace - hdfs" or "UpdateFiles - hdfs". Choose export Destination. Click "Finish". Then you will get two runnable Jar files.
+        script/run-all-trace TRACENAME OUTPUT-FILE-BASE
+  
+   where TRACENAME is the name of the trace file genreator with scripts/trace-generator, which should be in a location accessible on all nodes,
+   and OUTPUT-FILE is where the experiment output will be located. Each cluster will write their own output file postfixed with `.1`, `.2`, etc.
+   (Java code in `sd3.ReadTrace`)
 
-PART 3 - STEPS FOR RUNNING JARS:
+   By default, this runs trials of the trace with different replication policies. Change the `main()` function sd3.ReadTrace to edit this behavior.
 
-8. Run ./scripts/autoSD <Cluster_Index> <Trace_File_Path> <Cluster1_IP> <Cluster2_IP> <Cluster3_IP>". It will iteratively run the SD program 5 times and save the experimental results into ./Selective_Data_Experiment_Result directory.
+*  a tool for erasing extra replicas of files in `scripts/delete-extra` (Java code in sd3.DeleteExtra)
 
-9. The program will measure: performance without replication; performance with paritial replication; performance with complete replication.
+*  a tool for running the replication alone in `scripts/all-update-files`, which can then be killed by `scripts/kill-update-files`.
+   (Java code in sd3.UpdateFiles)
+
+   The replication implementation assumes it can identify the source of an access to a file based on the IP address and that this IP
+   address is the same as the IP address of the namenode of the cluster from which that access comes. To implement a different policy
+   change the utility functions in sd3.SD3Config. The code is also hard-coded to assume three clusters in the `main()` of sd3.ReadTrace
+   and sd3.UpdateFiles.
+

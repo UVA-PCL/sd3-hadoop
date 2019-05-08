@@ -1,0 +1,13 @@
+#!/bin/bash
+
+source $(dirname $0)/config.sh
+CLUSTER_ID=$1
+LOG_FILE=$2
+
+set -e
+
+mkdir -p $EXPERIMENT_DIR
+run_java sd3.UpdateFiles $CLUSTER_ID "${EXPERIMENT_HOSTS[@]}" \
+    > $LOG_FILE 2>&1 &
+echo $! >$EXPERIMENT_DIR/update-files.pid
+

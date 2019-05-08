@@ -24,7 +24,9 @@ AUDIT_LOG=$EXPERIMENT_DIR/hadoop-2.9.2/logs/hdfs-audit.log
 
 # Options to pass when running Java. This should set system properties
 # starting with sd3 for experiment settings, such as the location
-# of
+# of the trace data, the HDFS port to expect, the audit log file
+# location, and the port number to use for communication between
+# daemons
 JAVA_OPTS="-Dsd3.listener-port=22222 -Dsd3.hdfs-port=9001 -Dsd3.tracedata=$TRACE_DATA -Dsd3.audit-log=$AUDIT_LOG"
 
 # Our current host name, for accessing the local HDFS installation from its namenode.
@@ -34,6 +36,7 @@ HOST=${HOST-$(hostname -i)}
 HDFS_PORT=9001
 
 
+### The rest of this is not intended to be edited
 ROOT=$(realpath $(dirname $0)/..)
 SCRIPT_DIR=$(realpath $(dirname $0))
 

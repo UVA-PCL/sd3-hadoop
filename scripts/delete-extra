@@ -7,4 +7,4 @@ LOG_FILE=$3
 
 set -x
 
-run_java com.hdfs.DeleteExtra "${EXPERIMENT_HOSTS[@]}"
+run_java sd3.DeleteExtra "${EXPERIMENT_HOSTS[@]}"

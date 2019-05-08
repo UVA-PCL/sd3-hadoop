@@ -7,4 +7,4 @@ LOG_FILE=$3
 
 set -x
 
-run_java com.hdfs.ReadTrace $CLUSTER_ID $TRACE_FILE "${EXPERIMENT_HOSTS[@]}" >$LOG_FILE 2>&1
+run_java ReadTrace $CLUSTER_ID $TRACE_FILE "${EXPERIMENT_HOSTS[@]}" >$LOG_FILE 2>&1

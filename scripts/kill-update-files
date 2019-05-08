@@ -1,0 +1,7 @@
+#!/bin/bash
+
+source $(dirname $0)/config.sh
+
+for host in "${EXPERIMENT_HOSTS[@]}"; do
+    ssh $host 'kill $(cat '$EXPERIMENT_DIR'/update-files.pid)'
+done
