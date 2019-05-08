@@ -53,3 +53,17 @@ Included in this repository:
    change the utility functions in sd3.SD3Config. The code is also hard-coded to assume three clusters in the `main()` of sd3.ReadTrace
    and sd3.UpdateFiles.
 
+# Authors
+
+The code in this repository was created by Azman Garcha,  Weiqiang Jin, and Zeitan Liu under the supervision of Charles Reiss
+and Haiying Shen.
+
+# Acknowledgements
+
+We would like to thank the collabarators of this project:
+
+*  Bruce Maggs, Pelham Wilder Professor of Computer Science, Duke University and Vice President, Research, Akamai Technologies
+*  Weijia Xu, Research Engineer, Texas Advanced Computing Center 
+*  Open Science Grid (OSG)
+*  SURA (Southeastern Universities Research Association) 
+*  Naval Research Lab
