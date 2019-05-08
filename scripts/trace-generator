@@ -1,3 +1,3 @@
 #!/bin/bash
 source $(dirname $0)/config.sh
-run_java sd3.TraceGenerator
+run_java TraceGenerator
