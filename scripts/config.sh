@@ -12,8 +12,9 @@ EXPERIMENT_DIR=/localtmp/cr4bd
 
 # Hosts to run experiment on. The first will host "cluster 1", containing
 # generated files with numbers starting 1, the second "cluster 2", and so on.
-#EXPERIMENT_HOSTS=(shen-16 shen-17 shen-18)
 EXPERIMENT_HOSTS=(128.143.136.116 128.143.69.232 128.143.69.231)
+# set EXPERIMENT_HOSTS_COMMAS to a comma-separated version of EXPERIMENT_HOSTS
+{ local IFS=","; EXPERIMENT_HOSTS_COMMAS="${EXPERIMENT_HOSTS[@]}" }
 
 # Hadoop binary tarball to extract.
 HADOOP_TGZ=/net/zf14/cr4bd/research/hadoop-2.9.2.tar.gz
@@ -27,7 +28,8 @@ AUDIT_LOG=$EXPERIMENT_DIR/hadoop-2.9.2/logs/hdfs-audit.log
 # of the trace data, the HDFS port to expect, the audit log file
 # location, and the port number to use for communication between
 # daemons
-JAVA_OPTS="-Dsd3.listener-port=22222 -Dsd3.hdfs-port=9001 -Dsd3.tracedata=$TRACE_DATA -Dsd3.audit-log=$AUDIT_LOG"
+JAVA_OPTS="-Dsd3.listener-port=22222 -Dsd3.hdfs-port=9001 -Dsd3.tracedata=$TRACE_DATA -Dsd3.audit-log=$AUDIT_LOG -Dsd3.cluster-hosts=$EXPERIMENT_HOSTS_COMMAS"
+
 
 # Our current host name, for accessing the local HDFS installation from its namenode.
 HOST=${HOST-$(hostname -i)}

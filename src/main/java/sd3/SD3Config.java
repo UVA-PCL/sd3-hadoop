@@ -23,6 +23,17 @@ public class SD3Config {
     private static int replicateInterval = Integer.parseInt(System.getProperty("sd3.replicate-interval", "10"));
     private static int replicateHistoryInterval = Integer.parseInt(System.getProperty("sd3.replicate-history-interval", "3600"));
 
+    public static void setClusterIPsFromProperties() {
+        String clusterHostList = System.getProperty("sd3.cluster-hosts");
+        if (clusterHostList != null) {
+            try {
+                setClusterIPs(clusterHostList.split(","));
+            } catch (UnknownHostException une) {
+                System.err.println("Could not configure cluster hosts " + clusterHostList + ": " + une.getMessage());
+            }
+        }
+    }
+
     private static String hostToIp(String host) throws UnknownHostException {
         return InetAddress.getByName(host).toString().split("/")[1];
     }

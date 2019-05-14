@@ -360,12 +360,15 @@ public class ReadTrace {
     public static void main(String[] args) throws Exception {
         if (args.length != 5) {
             System.out.println("error: number of arguments, arg[0] should be cluster number, arg[1] should be trace file name");
-            System.out.println("args[2] to args[4] is cluster IP address");
+            System.out.println("and: ");
+            System.out.println("   the System property sd3.cluster-hosts should be set the main host names for all clusters");
+            System.out.println("   the System proprety sd3.tracedata to the location of the trace to read from");
+            System.out.println("   the System proprety sd3.audit-log to the location of the HDFS audit log");
             System.exit(0);
         }
         String traceFile = args[1];
+        SD3Config.setClusterIPsFromProperties();
         SD3Config.setLocalCluster(Integer.parseInt(args[0]));
-        SD3Config.setClusterIPs(new String[]{args[2], args[3], args[4]});
         Cluster cluster;
         cluster = new Cluster(SD3Config.getLocalClusterIP());
 
@@ -398,65 +401,4 @@ public class ReadTrace {
 
         System.exit(0);
     }
-
-	/*
-	public static void old_main(String[] args) throws InterruptedException, IOException {
-
-		if(args.length != 5) {
-			System.out.println("error: number of arguments, arg[0] should be cluster number, arg[1] should be trace file name");
-			System.out.println("args[2] to args[4] is cluster IP address");
-			System.exit(0);
-		}
-		Cluster cluster;
-                SD3Config.setLocalCluster(Integer.parseInt(args[0]));
-                SD3Config.setClusterIPs(new String[]{args[2], args[3], args[4]});
-                cluster = new Cluster(SD3Config.getLocalClusterIP());
-                
-                System.out.println("Starting at " + now());
-		Listener listener = new Listener(cluster);
-		listener.start();
-		//while(true) {
-		
-		System.out.println("Execute trace without policy");
-		operate_Trace(args[1],cluster);
-		
-
-		while(cluster.others__partial_replication_unfinish != 0) {
-            if (DEBUG) System.out.println(now() + ": waiting for others to finish (partial replication)");
-			Thread.sleep(300);
-		}
-
-		System.out.println("Execution finished. Begin replicating files under the policy.");
-		ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-		executor.scheduleAtFixedRate(new RunParseLog(Calendar.getInstance().getTime(), 0, args,cluster,true),
-				0, SD3Config.getReplicateInterval(), TimeUnit.SECONDS);
-
-
-		System.out.println("All finished. Begin executing the trace.");
-		operate_Trace(args[1],cluster);
-		executor.shutdown();
-
-		System.out.println("Execution finished. Begin replicating all the files");
-		
-		executor.scheduleAtFixedRate(new RunParseLog(Calendar.getInstance().getTime(), 0, args,cluster,false),
-				0, SD3Config.getReplicateInterval(), TimeUnit.SECONDS);
-
-		System.out.println("Send finish all replication message to others. Waiting.");
-		while(cluster.others__all_replication_unfinish != 0) {
-			if (DEBUG) System.out.println(now() + ": waiting for others to finish (all replication)");
-			Thread.sleep(300);
-		}
-		
-		System.out.println("All finished. Begin executing the trace.");
-		
-		operate_Trace(args,cluster);
-		executor.shutdown();
-		
-		System.out.println("Run over.");
-                System.out.println("Finishing at " + DateFormat.getInstance().format(new Date()));
-		System.exit(0);
-		//}
-		
-	}
-	*/
 }

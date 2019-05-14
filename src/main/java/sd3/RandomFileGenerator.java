@@ -50,9 +50,7 @@ public class RandomFileGenerator {
     }
 
     public static void main(String[] args) throws IOException {
-
         Random ran = new Random();
-
         Scanner reader = new Scanner(System.in);  // Reading from System.in
         System.out.println("Enter number of clusters: ");
         int cluster_n = reader.nextInt();
@@ -65,9 +63,9 @@ public class RandomFileGenerator {
                 //int line = ran.nextInt(10000000-1000000+1) + 1000000;
                 int index = file_n * cluster_n + i;
                 new RandomFileGenerator("file" + index + ".txt", 100000).generate();
-                System.out.println(i);
             }
         }
+        System.out.println("Done generating files");
     }
 
 }

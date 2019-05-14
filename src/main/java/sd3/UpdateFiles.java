@@ -14,8 +14,8 @@ public class UpdateFiles {
         System.out.println("executor created.");
 
         Cluster cluster;
+        SD3Config.setClusterIPsFromProperties();
         SD3Config.setLocalCluster(Integer.parseInt(args[0]));
-        SD3Config.setClusterIPs(new String[]{args[1], args[2], args[3]});
         cluster = new Cluster(SD3Config.getLocalClusterIP());
 
         System.out.println("Starting at " + DateFormat.getInstance().format(new Date()));
