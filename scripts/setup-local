@@ -9,7 +9,7 @@ for file in hdfs-site.xml core-site.xml hadoop-env.sh log4j.properties; do
     sed \
         -e "s!@EXPERIMENT_DIR@!${EXPERIMENT_DIR}!g" \
         -e "s!@HOST@!${HOST}!g" \
-        < $SCRIPT_DIR/$file \
+        < $SCRIPT_DIR/../config-base/$file \
         > $EXPERIMENT_DIR/hadoop-*/etc/hadoop/$file
 done
 $EXPERIMENT_DIR/hadoop-*/bin/hdfs namenode -format
