@@ -7,13 +7,24 @@ Data is replicated on the granualirty of Hadoop files, and each file has a maste
 To access replicated copies, an agent on one of the clusters, first tries to access the file locally, then tries to access it on its master copy.
 On each cluster, a thread monitors the Hadoop audit log and replicates files in accordance with the SD3-determined threshold.
 
+# Setup 
+
 To use the tools in this repository
 
 *  build the Java portions with `mvn package`
 *  edit `scripts/config.sh` to correspond to your site and where you intend to run experiements. You should have passwordless
-   SSH access to each machine on which you want to run a cluster.
+   SSH access to each machine on which you want to run a cluster. The scripts assume that all nodes have access to the 
+   scripts via the same full path.
 *  edit the Hadoop configuration template sin `config-base` to at least include a correct `JAVA_HOME` in `hadoop-env.sh`
-  
+
+# Note on replication implementation
+
+The replication implementation assumes it can identify the source of an access to a file based on the IP address and that this IP
+address is the same as the IP address of the namenode of the cluster from which that access comes. It uses HDFS's access log to
+monitor accesses without running a modified version of HDFS.
+To implement a different policy change the utility functions in sd3.SD3Config.
+
+# Scripts
 
 Included in this repository:
 
@@ -53,11 +64,6 @@ Included in this repository:
 
 *  a tool for running the replication alone in `scripts/all-update-files`, which can then be killed by `scripts/kill-update-files`.
    (Java code in sd3.UpdateFiles)
-
-   The replication implementation assumes it can identify the source of an access to a file based on the IP address and that this IP
-   address is the same as the IP address of the namenode of the cluster from which that access comes. To implement a different policy
-   change the utility functions in sd3.SD3Config. The code is also hard-coded to assume three clusters in the `main()` of sd3.ReadTrace
-   and sd3.UpdateFiles.
 
 # Authors
 
