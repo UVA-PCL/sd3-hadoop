@@ -1,3 +1,15 @@
 #!/bin/bash
+set -x
 source $(dirname $0)/config.sh
-run_java RandomFileGenerator
+
+pids=()
+i=1
+for host in "${EXPERIMENT_HOSTS[@]}"; do
+    nohup ssh $host $SCRIPT_DIR/one-file-generator $i &
+    pids+=($!)
+    i=$(( $i + 1 ))
+done
+
+for pid in "${pids[@]}"; do
+    wait $pid
+done

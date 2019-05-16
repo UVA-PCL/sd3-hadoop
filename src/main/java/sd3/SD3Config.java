@@ -18,10 +18,20 @@ public class SD3Config {
     private static String filePostfix = ".txt";
     private static int listenerPort = Integer.parseInt((String) System.getProperties().getOrDefault("sd3.listener-port", "22222"));
     private static int hdfsPort = Integer.parseInt((String) System.getProperties().getOrDefault("sd3.hdfs-port", "9000"));
-    private static String traceDataRoot = System.getProperty("sd3.tracedata");
+    private static String traceDataRoot = System.getProperty("sd3.trace-data");
+    private static String generatedFileRoot = System.getProperty("sd3.generated-files");
     private static String auditLog = System.getProperty("sd3.audit-log");
     private static int replicateInterval = Integer.parseInt(System.getProperty("sd3.replicate-interval", "10"));
     private static int replicateHistoryInterval = Integer.parseInt(System.getProperty("sd3.replicate-history-interval", "3600"));
+    private static int filePerClusterCount = Integer.parseInt(System.getProperty("sd3.trace-file-per-cluster", "1000"));
+
+    public static int getFilePerClusterCount() {
+        return filePerClusterCount;
+    }
+
+    public static String getGeneratedFileRoot() {
+        return generatedFileRoot;
+    }
 
     public static void setClusterIPsFromProperties() {
         String clusterHostList = System.getProperty("sd3.cluster-hosts");

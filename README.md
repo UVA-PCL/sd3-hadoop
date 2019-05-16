@@ -12,6 +12,7 @@ To use the tools in this repository
 *  build the Java portions with `mvn package`
 *  edit `scripts/config.sh` to correspond to your site and where you intend to run experiements. You should have passwordless
    SSH access to each machine on which you want to run a cluster.
+*  edit the Hadoop configuration template sin `config-base` to at least include a correct `JAVA_HOME` in `hadoop-env.sh`
   
 
 Included in this repository:
@@ -24,21 +25,25 @@ Included in this repository:
 *  a script to starting and stopping the Hadoop clusters configured with `setup-all` in `scripts/start-all` and
    `scripts/stop-all`
 
-*  a tool for generating random test files `scripts/file-generator` (Java code in sd3.RandomFileGenerator). This prompts for its parameters.
+*  a tool for generating random test files `scripts/file-generator` (Java code in sd3.RandomFileGenerator). This
+   will generate the files for each cluster on each cluster separately.
 
-*  a script for uploading the random test files, `scripts/upload-all`.
+*  a script for uploading the random test files, `scripts/upload-all`.  This requires to the generated files directory to
+   be copied to or available on each node.
 
 *  a tool for generating a psuedorandom trace indicating which files are read from which cluster, that reads some files preferentially according to a distribution,
    `scripts/trace-generator` (Java code in sd3.TraceGenerator).
    This prompts for its parameters. The resulting trace will include lines indicating a cluster number to perform an operation,
-   a filename, and whether the operation is a read or write.
+   a filename, and whether the operation is a read or write. The trace will be placed in the directory configured
+   in config.sh, which will need to be accessible on all nodes.
 
 *  a tool for running  a trace simulatenously across each of the clusters, run as 
 
-        script/run-all-trace TRACENAME OUTPUT-FILE-BASE
+        scripts/all-read-trace TRACENAME OUTPUT-FILE-BASE
   
-   where TRACENAME is the name of the trace file genreator with scripts/trace-generator, which should be in a location accessible on all nodes,
-   and OUTPUT-FILE is where the experiment output will be located. Each cluster will write their own output file postfixed with `.1`, `.2`, etc.
+   where TRACENAME is the name of the trace file generated with scripts/trace-generator, 
+   which should be the location configured in config.sh.
+   and OUTPUT-FILE is the absolute path where the experiment output will be located. Each cluster will write their own output file postfixed with `.1`, `.2`, etc.
    (Java code in `sd3.ReadTrace`)
 
    By default, this runs trials of the trace with different replication policies. Change the `main()` function sd3.ReadTrace to edit this behavior.

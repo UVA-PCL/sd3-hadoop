@@ -3,8 +3,9 @@ set -ex
 . $(dirname $0)/config.sh
 
 mkdir -p $EXPERIMENT_DIR
-rm -r $EXPERIMENT_DIR/hadoop_tmp
-tar -C $EXPERIMENT_DIR -axvf $HADOOP_TGZ
+rm -r $EXPERIMENT_DIR/hadoop_tmp || true
+cd $EXPERIMENT_DIR
+tar -axvf $HADOOP_TGZ
 for file in hdfs-site.xml core-site.xml hadoop-env.sh log4j.properties; do
     sed \
         -e "s!@EXPERIMENT_DIR@!${EXPERIMENT_DIR}!g" \

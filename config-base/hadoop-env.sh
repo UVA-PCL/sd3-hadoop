@@ -25,7 +25,7 @@ export HDFS_AUDIT_LOGGER=INFO,RFAAUDIT
 export HDFS_ROOT_LOGGER=INFO,RFA
 
 # The java implementation to use.
-export JAVA_HOME=${JAVA_HOME}
+export JAVA_HOME="/sw/linux-any/java/9.0.4"
 
 # The jsvc implementation to use. Jsvc is required to run secure datanodes
 # that bind to privileged ports to provide authentication of data transfer

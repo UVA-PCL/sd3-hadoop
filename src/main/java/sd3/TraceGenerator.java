@@ -4,63 +4,65 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Random;
 import java.util.Scanner;
 
 public class TraceGenerator {
-    private static String root = SD3Config.getTraceDataRoot();
-
     public static void main(String[] args) throws Exception {
+        SD3Config.setClusterIPsFromProperties();
+
         Scanner reader = new Scanner(System.in);
 
-        System.out.println("Enter number of clusters: ");
-        int clustNum = reader.nextInt();
+        int clustNum = SD3Config.getMaxClusterNumber();
 
-        System.out.println("Enter number of relative reads: ");
-        int readNum = reader.nextInt();
+        System.out.print("Enter number of relative reads: "); System.out.flush();
+        int readNum = Integer.parseInt(reader.nextLine());
 
-        System.out.println("Enter number of relative writes: ");
-        int writeNum = reader.nextInt();
+        System.out.print("Enter number of relative writes: "); System.out.flush();
+        int writeNum = Integer.parseInt(reader.nextLine());
 
-        System.out.println("Trace record count: ");
-        int lines = reader.nextInt();
+        System.out.print("Enter trace record count: "); System.out.flush();
+        int lines = Integer.parseInt(reader.nextLine());
+
+        System.out.print("Output file name: "); System.out.flush();
+        String fileName = reader.nextLine();
 
         reader.close();
+        Path filePath = Paths.get(SD3Config.getTraceDataRoot(), fileName);
 
-        String fileName = "trace" + lines + ".txt";
-        Path fullPath = new File(root, fileName).toPath();
-
-        try (BufferedWriter bw = Files.newBufferedWriter(fullPath)) {
+        try (BufferedWriter bw = Files.newBufferedWriter(filePath)) {
 
             for (int i = 0; i < lines; ++i) {
                 Random ran = new Random();
                 int cluster = ran.nextInt(clustNum) + 1;
                 int home_cluster = ran.nextInt(clustNum) + 1;
                 int fileTemp = ran.nextInt(100);
+                int fileCount = SD3Config.getFilePerClusterCount();
                 int fileN = 0;
                 if (fileTemp <= 24) {
-                    fileN = ran.nextInt(10);
+                    fileN = ran.nextInt(fileCount / 100);
                 } else if (fileTemp <= 43 && 24 < fileTemp) {
-                    fileN = ran.nextInt(100);
+                    fileN = ran.nextInt(fileCount / 10);
                 } else if (fileTemp <= 56 && 43 < fileTemp) {
-                    fileN = ran.nextInt(200);
+                    fileN = ran.nextInt(fileCount / 10 * 2);
                 } else if (fileTemp <= 66 && 56 < fileTemp) {
-                    fileN = ran.nextInt(300);
+                    fileN = ran.nextInt(fileCount / 10 * 3);
                 } else if (fileTemp <= 74 && 66 < fileTemp) {
-                    fileN = ran.nextInt(400);
+                    fileN = ran.nextInt(fileCount / 10 * 4);
                 } else if (fileTemp <= 81 && 74 < fileTemp) {
-                    fileN = ran.nextInt(500);
+                    fileN = ran.nextInt(fileCount / 10 * 5);
                 } else if (fileTemp <= 87 && 81 < fileTemp) {
-                    fileN = ran.nextInt(600);
+                    fileN = ran.nextInt(fileCount / 10 * 6);
                 } else if (fileTemp <= 92 && 87 < fileTemp) {
-                    fileN = ran.nextInt(700);
+                    fileN = ran.nextInt(fileCount / 10 * 7);
                 } else if (fileTemp <= 96 && 92 < fileTemp) {
-                    fileN = ran.nextInt(800);
+                    fileN = ran.nextInt(fileCount / 10 * 8);
                 } else {
-                    fileN = ran.nextInt(900);
+                    fileN = ran.nextInt(fileCount);
                 }
 
-                int file = home_cluster * 1000 + fileN;
+                int file = home_cluster * 1000000 + fileN;
 
                 int tempOpt = ran.nextInt(readNum + writeNum);
                 int optnum = 0;
@@ -77,7 +79,7 @@ public class TraceGenerator {
                 bw.write(line);
             }
             bw.close();
-            System.out.println("Trace generated in " + fileName);
+            System.out.println("Trace generated in " + filePath);
         } catch (java.io.IOException ex) {
             ex.printStackTrace();
         }

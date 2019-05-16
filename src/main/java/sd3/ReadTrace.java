@@ -358,7 +358,7 @@ public class ReadTrace {
 
 
     public static void main(String[] args) throws Exception {
-        if (args.length != 5) {
+        if (args.length != 2) {
             System.out.println("error: number of arguments, arg[0] should be cluster number, arg[1] should be trace file name");
             System.out.println("and: ");
             System.out.println("   the System property sd3.cluster-hosts should be set the main host names for all clusters");
@@ -384,21 +384,22 @@ public class ReadTrace {
 		   in each case, replication is done "live", by periodically scanning the audit log and making
 		   new decisions about replication
 		 */
-        System.out.println("************* Running baseline: no replication ***************\n");
-        runExperiment(traceFile, cluster, true, false, false);
-        Thread.sleep(30 * 1000);
-        System.out.println("************* Running replication with policy ***************\n");
-        runExperiment(traceFile, cluster, true, true, true);
-        Thread.sleep(30 * 1000);
-        System.out.println("************* Running replication of everything accessed ***************\n");
-        runExperiment(traceFile, cluster, true, true, false);
-        Thread.sleep(30 * 1000);
-        System.out.println("************* Accessing everything after replicating previously ***************\n");
-        runExperiment(traceFile, cluster, false, true, false);
-        System.out.println("************* About to stop main thread ****************\n");
-
-        listener.toDie();
-
+		try {
+            System.out.println("************* Running baseline: no replication ***************\n");
+            runExperiment(traceFile, cluster, true, false, false);
+            Thread.sleep(30 * 1000);
+            System.out.println("************* Running replication with policy ***************\n");
+            runExperiment(traceFile, cluster, true, true, true);
+            Thread.sleep(30 * 1000);
+            System.out.println("************* Running replication of everything accessed ***************\n");
+            runExperiment(traceFile, cluster, true, true, false);
+            Thread.sleep(30 * 1000);
+            System.out.println("************* Accessing everything after replicating previously ***************\n");
+            runExperiment(traceFile, cluster, false, true, false);
+            System.out.println("************* About to stop main thread ****************\n");
+        } finally {
+            listener.toDie();
+        }
         System.exit(0);
     }
 }

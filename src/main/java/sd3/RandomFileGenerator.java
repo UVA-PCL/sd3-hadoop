@@ -20,7 +20,7 @@ public class RandomFileGenerator {
     }
 
     void generate() throws IOException {
-        Path fullPath = new File(SD3Config.getTraceDataRoot(), fileName).toPath();
+        Path fullPath = new File(SD3Config.getGeneratedFileRoot(), fileName).toPath();
         // make sure file exists
         Files.createDirectories(fullPath.getParent());
         try (BufferedWriter bw = Files.newBufferedWriter(fullPath)) {
@@ -49,21 +49,25 @@ public class RandomFileGenerator {
         return generatedString;
     }
 
-    public static void main(String[] args) throws IOException {
-        Random ran = new Random();
-        Scanner reader = new Scanner(System.in);  // Reading from System.in
-        System.out.println("Enter number of clusters: ");
-        int cluster_n = reader.nextInt();
-        System.out.println("Enter number of files per cluster: ");
-        int file_n = reader.nextInt();
-        reader.close();
+    private static void generateForCluster(int n) throws IOException {
+        int file_n = SD3Config.getFilePerClusterCount();
+        for (int i = 0; i <= (file_n - 1); i++) {
+            int index = 1000000 * n + i;
+            new RandomFileGenerator("file" + index + ".txt", 100000).generate();
+        }
+    }
 
-        for (int n = 1; n <= cluster_n; n++) {
-            for (int i = 0; i <= (file_n - 1); i++) {
-                //int line = ran.nextInt(10000000-1000000+1) + 1000000;
-                int index = file_n * cluster_n + i;
-                new RandomFileGenerator("file" + index + ".txt", 100000).generate();
+    public static void main(String[] args) throws IOException {
+        int for_cluster = args.length == 0 ? -1 : Integer.parseInt(args[0]);
+        SD3Config.setClusterIPsFromProperties();
+        int cluster_n = SD3Config.getMaxClusterNumber();
+
+        if (for_cluster == -1) {
+            for (int n = 1; n <= cluster_n; n++) {
+                generateForCluster(n);
             }
+        } else {
+            generateForCluster(for_cluster);
         }
         System.out.println("Done generating files");
     }
