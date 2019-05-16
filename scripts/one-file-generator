@@ -1,0 +1,6 @@
+#!/bin/bash
+set -x
+source $(dirname $0)/config.sh
+CLUSTER_ID=$1
+
+run_java RandomFileGenerator $CLUSTER_ID

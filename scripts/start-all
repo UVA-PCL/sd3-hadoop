@@ -1,0 +1,5 @@
+#!/bin/bash
+
+source $(dirname $0)/config.sh
+
+$SCRIPT_DIR/do-all.sh start-one
