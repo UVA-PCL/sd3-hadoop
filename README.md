@@ -31,8 +31,9 @@ Included in this repository:
 *  a script for uploading the random test files, `scripts/upload-all`.  This requires to the generated files directory to
    be copied to or available on each node.
 
-*  a tool for generating a psuedorandom trace indicating which files are read from which cluster, that reads some files preferentially according to a distribution,
-   `scripts/trace-generator` (Java code in sd3.TraceGenerator).
+*  a tool for generating a psuedorandom trace indicating which files are read from which cluster, that reads some
+    files preferentially according to a distribution, `scripts/trace-generator` (Java code in sd3.TraceGenerator).
+
    This prompts for its parameters. The resulting trace will include lines indicating a cluster number to perform an operation,
    a filename, and whether the operation is a read or write. The trace will be placed in the directory configured
    in config.sh, which will need to be accessible on all nodes.
