@@ -88,7 +88,6 @@ public class ParseLog {
 
     public void printAll() {
         for (LogEntry le : records) {
-            System.out.println("Hello");
             System.out.println(le);
         }
     }

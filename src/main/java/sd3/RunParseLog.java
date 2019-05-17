@@ -42,36 +42,48 @@ public class RunParseLog implements Runnable {
             ArrayList<String[]> chosen_trimmed_records = new ArrayList<String[]>();
             if (usePolicy) {
                 if (DEBUG) System.out.println("The number of replicas over the threshold ranging from 0-100");
-                for (thold = 0.0; thold <= 100; thold += 1.0) {
-                    if (trimmed_records != null && trimmed_records.size() == 0) {
-                        break;
+                ParseLog pl = new ParseLog(SD3Config.getAuditLog(), curTime, interval);
+
+                if (DEBUG) System.out.println("About to read audit log");
+
+                pl.readFile();
+
+                if (SD3Config.getReplicateTargetPortionEnabled()) {
+                    for (thold = 0.0; thold <= 100; thold += 1.0) {
+                        if (DEBUG) System.out.println("Done reading audit log");
+
+                        ArrayList<String[]> records = pl.getFrequency(thold);
+                        if (DEBUG) System.out.println("got " + records.size() + " records");
+
+                        trimmed_records = trim(records);
+                        if (DEBUG) System.out.println("got " + trimmed_records.size() + " trimmed records");
+                        replica_percent = trimmed_records.size() / total_file;
+                        if (replica_percent >= SD3Config.getReplicateTargetPortion() && chosen_threshold == 0) {
+                            chosen_threshold = thold;
+                            chosen_replica_percent = replica_percent;
+                            for (String[] item : trimmed_records) {
+                                chosen_trimmed_records.add(item);
+                            }
+                            break;
+                        }
                     }
 
-                    ParseLog pl = new ParseLog(SD3Config.getAuditLog(), curTime, interval);
-
-                    if (DEBUG) System.out.println("About to read audit log");
-
-                    pl.readFile();
-
-                    if (DEBUG) System.out.println("Done reading audit log");
-
+                    if (DEBUG) System.out.println("chosen threshold = " + chosen_threshold + "\treplica percentage is " + chosen_replica_percent);
+                } else {
+                    thold = SD3Config.getReplicateThreshold();
                     ArrayList<String[]> records = pl.getFrequency(thold);
                     if (DEBUG) System.out.println("got " + records.size() + " records");
 
                     trimmed_records = trim(records);
                     if (DEBUG) System.out.println("got " + trimmed_records.size() + " trimmed records");
                     replica_percent = trimmed_records.size() / total_file;
-                    if (replica_percent >= 0.01 && replica_percent <= 0.03 && chosen_threshold == 0) {
-                        chosen_threshold = thold;
-                        chosen_replica_percent = replica_percent;
-                        for (String[] item : trimmed_records) {
-                            chosen_trimmed_records.add(item);
-                        }
+                    chosen_threshold = thold;
+                    chosen_replica_percent = replica_percent;
+                    for (String[] item : trimmed_records) {
+                        chosen_trimmed_records.add(item);
                     }
+                    if (DEBUG) System.out.println("chosen threshold = " + chosen_threshold + "\treplica percentage is " + chosen_replica_percent);
                 }
-
-                if (DEBUG)
-                    System.out.println("chosen threshold = " + chosen_threshold + "\treplica percentage is " + chosen_replica_percent);
             } else {
                 ParseLog pl = new ParseLog(SD3Config.getAuditLog(), curTime, interval);
 

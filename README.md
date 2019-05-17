@@ -17,12 +17,6 @@ To use the tools in this repository
    scripts via the same full path.
 *  edit the Hadoop configuration template sin `config-base` to at least include a correct `JAVA_HOME` in `hadoop-env.sh`
 
-# Note on replication implementation
-
-The replication implementation assumes it can identify the source of an access to a file based on the IP address and that this IP
-address is the same as the IP address of the namenode of the cluster from which that access comes. It uses HDFS's access log to
-monitor accesses without running a modified version of HDFS.
-To implement a different policy change the utility functions in sd3.SD3Config.
 
 # Scripts
 
@@ -65,6 +59,34 @@ Included in this repository:
 *  a tool for running the replication alone in `scripts/all-update-files`, which can then be killed by `scripts/kill-update-files`.
    (Java code in sd3.UpdateFiles)
 
+# Note on replication implementation
+
+The replication implementation assumes it can identify the source of an access to a file based on the IP address and that this IP
+address is the same as the IP address of the namenode of the cluster from which that access comes. It uses HDFS's access log to
+monitor accesses without running a modified version of HDFS.
+To implement a different policy change the utility functions in sd3.SD3Config.
+
+By default the replication implementation aims to find a cost threshold that causes a certain portion of files to be replicated,
+and by default it checks every 10 seconds for files to replica, computing cost thresholds on a 1-hour interval. These settings
+are configurable using system properties:
+
+*  `sd3.replciate-interval`: seconds between scanning active files to determine what to replicate
+*  `sd3.replicate-history-interval`: seconds of historical access to consider when determining what to replicate
+*  `sd3.replicate-target-portion-enabled` (default: true): if set to true, choose replication threshold to replicate at least
+    `sd3.replicate-target-portion` of the files eligible (1.0 = all the files); otherwise use `sd3.replciate-threshold` to
+    as the cost threshold (units: # file transfers) to determine what files to replicate.
+
+## Simplifications of algorithm for this context
+
+*  The replication implementation does not attempt to manage the total storage used for replicas. Updates to master copies
+   trigger deletion of replicas, but do not trigger creation of replicas. Rereplication is triggered because the copies
+   still exceed the cost.
+
+*  Data movement costs are between clusters are assumed uniform.
+
+*  File size is assumed to be approximately uniform (and is uniform for this experiment setup) to simplify replica threshold calculation.
+
+# Configuration settings
 # Authors
 
 The code in this repository was created by Azman Garcha,  Weiqiang Jin, and Zeitan Liu under the supervision of Charles Reiss

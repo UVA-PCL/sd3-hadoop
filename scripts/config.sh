@@ -67,5 +67,5 @@ SCRIPT_DIR=$(realpath $(dirname $0))
 function run_java() {
     class=$1
     shift
-    MAVEN_OPTS="$JAVA_OPTS" $MAVEN -f $ROOT/pom.xml exec:java -Dexec.mainClass="sd3.$class" "-Dexec.args=${*}"
+    MAVEN_OPTS="$JAVA_OPTS" exec $MAVEN -f $ROOT/pom.xml exec:java -Dexec.mainClass="sd3.$class" "-Dexec.args=${*}"
 }

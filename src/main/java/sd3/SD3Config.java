@@ -23,6 +23,9 @@ public class SD3Config {
     private static String auditLog = System.getProperty("sd3.audit-log");
     private static int replicateInterval = Integer.parseInt(System.getProperty("sd3.replicate-interval", "10"));
     private static int replicateHistoryInterval = Integer.parseInt(System.getProperty("sd3.replicate-history-interval", "3600"));
+    private static boolean replicateTargetPortionEnabled = System.getProperty("sd3.replicate-target-portion-enabled", "true").equals("true");
+    private static double replicateTargetPortion = Double.parseDouble(System.getProperty("sd3.replicate-target-portion", "0.02"));
+    private static double replicateThreshold = Double.parseDouble(System.getProperty("sd3.replicate-threshold", "NaN"));
     private static int filePerClusterCount = Integer.parseInt(System.getProperty("sd3.trace-file-per-cluster", "1000"));
 
     public static int getFilePerClusterCount() {
@@ -31,6 +34,18 @@ public class SD3Config {
 
     public static String getGeneratedFileRoot() {
         return generatedFileRoot;
+    }
+
+    public static boolean getReplicateTargetPortionEnabled() {
+        return replicateTargetPortionEnabled;
+    }
+
+    public static double getReplicateTargetPortion() {
+        return replicateTargetPortion;
+    }
+
+    public static double getReplicateThreshold() {
+        return replicateThreshold;
     }
 
     public static void setClusterIPsFromProperties() {
