@@ -73,8 +73,8 @@ are configurable using system properties:
 *  `sd3.replciate-interval`: seconds between scanning active files to determine what to replicate
 *  `sd3.replicate-history-interval`: seconds of historical access to consider when determining what to replicate
 *  `sd3.replicate-target-portion-enabled` (default: true): if set to true, choose replication threshold to replicate at least
-    `sd3.replicate-target-portion` of the files eligible (1.0 = all the files); otherwise use `sd3.replciate-threshold` to
-    as the cost threshold (units: # file transfers) to determine what files to replicate.
+    `sd3.replicate-target-portion` of the total files per cluster (e.g. 0.5 = try to replicate a whole cluster's worth of files);
+     otherwise use `sd3.replicate-threshold` to as the cost threshold (units: # file transfers) to determine what files to replicate.
 
 ## Simplifications of algorithm for this context
 
@@ -86,7 +86,6 @@ are configurable using system properties:
 
 *  File size is assumed to be approximately uniform (and is uniform for this experiment setup) to simplify replica threshold calculation.
 
-# Configuration settings
 # Authors
 
 The code in this repository was created by Azman Garcha,  Weiqiang Jin, and Zeitan Liu under the supervision of Charles Reiss

@@ -27,7 +27,6 @@ public class RunParseLog implements Runnable {
         this.curTime = curTime;
         this.interval = interval;
         this.usePolicy = usePolicy;
-
     }
 
     public void run() {
@@ -36,31 +35,25 @@ public class RunParseLog implements Runnable {
             ArrayList<String[]> trimmed_records = null;
             double thold = 0.0;
             double replica_percent = 0.0;
-            double total_file = 1000;
             double chosen_threshold = 0.0;
             double chosen_replica_percent = 0.0;
             ArrayList<String[]> chosen_trimmed_records = new ArrayList<String[]>();
             if (usePolicy) {
-                if (DEBUG) System.out.println("The number of replicas over the threshold ranging from 0-100");
                 ParseLog pl = new ParseLog(SD3Config.getAuditLog(), curTime, interval);
 
                 if (DEBUG) System.out.println("About to read audit log");
-
                 pl.readFile();
+                if (DEBUG) System.out.println("Done reading audit log");
 
                 if (SD3Config.getReplicateTargetPortionEnabled()) {
                     for (thold = 0.0; thold <= 100; thold += 1.0) {
-                        if (DEBUG) System.out.println("Done reading audit log");
-
                         ArrayList<String[]> records = pl.getFrequency(thold);
                         if (DEBUG) System.out.println("got " + records.size() + " records");
 
                         trimmed_records = trim(records);
                         if (DEBUG) System.out.println("got " + trimmed_records.size() + " trimmed records");
-                        replica_percent = trimmed_records.size() / total_file;
-                        if (replica_percent >= SD3Config.getReplicateTargetPortion() && chosen_threshold == 0) {
+                        if (trimmed_records.size() / (double) SD3Config.getFilePerClusterCount() <= SD3Config.getReplicateTargetPortion() && chosen_threshold == 0) {
                             chosen_threshold = thold;
-                            chosen_replica_percent = replica_percent;
                             for (String[] item : trimmed_records) {
                                 chosen_trimmed_records.add(item);
                             }
@@ -68,7 +61,7 @@ public class RunParseLog implements Runnable {
                         }
                     }
 
-                    if (DEBUG) System.out.println("chosen threshold = " + chosen_threshold + "\treplica percentage is " + chosen_replica_percent);
+                    if (DEBUG) System.out.println("chosen threshold = " + chosen_threshold + "\treplicating " + chosen_trimmed_records.size() + " files");
                 } else {
                     thold = SD3Config.getReplicateThreshold();
                     ArrayList<String[]> records = pl.getFrequency(thold);
@@ -76,13 +69,12 @@ public class RunParseLog implements Runnable {
 
                     trimmed_records = trim(records);
                     if (DEBUG) System.out.println("got " + trimmed_records.size() + " trimmed records");
-                    replica_percent = trimmed_records.size() / total_file;
                     chosen_threshold = thold;
                     chosen_replica_percent = replica_percent;
                     for (String[] item : trimmed_records) {
                         chosen_trimmed_records.add(item);
                     }
-                    if (DEBUG) System.out.println("chosen threshold = " + chosen_threshold + "\treplica percentage is " + chosen_replica_percent);
+                    if (DEBUG) System.out.println("chosen threshold = " + chosen_threshold + "\treplicating " + chosen_trimmed_records.size() + " files");
                 }
             } else {
                 ParseLog pl = new ParseLog(SD3Config.getAuditLog(), curTime, interval);
@@ -140,6 +132,7 @@ public class RunParseLog implements Runnable {
                 FileSystem local_fs = FileSystem.get(URI.create(local_uri), conf);
                 FileSystem remote_fs = FileSystem.get(URI.create(remote_uri), conf);
                 FileUtil.copy(local_fs, new Path(local_uri), remote_fs, new Path(remote_uri), false, conf);
+                cluster.addToTotalCopied(local_fs.getFileStatus(new Path(local_uri)).getLen());
                 //System.out.println("Send file copy "+res[1]+ " from " + "local "+this.cluster.ip + " to "+cluster_name);
                 synchronized (cluster.local_file) {
                     if (cluster.local_file.containsKey(res[1])) {

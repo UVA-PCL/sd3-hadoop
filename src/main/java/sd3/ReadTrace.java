@@ -258,12 +258,11 @@ public class ReadTrace {
 
         BufferedReader br = new BufferedReader(new FileReader(SD3Config.getTraceDataRoot() + "/" + traceFile));
         String line = br.readLine();
-        int line_num = 1;
+        int operationCount = 0;
         while (line != null) {
             String[] trace = line.split(" ");
-            //System.out.println("read the trace line "+line_num+":"+line);
-            line_num++;
             if (Integer.parseInt(trace[1]) == SD3Config.getLocalCluster()) {
+                ++operationCount;
                 if (trace[2].equals("write")) {
                     pool.execute(new writeFile(cluster, "file" + trace[4]));
                 } else {
@@ -274,6 +273,8 @@ public class ReadTrace {
         }
 
         br.close();
+
+        System.out.println("Started " + operationCount + " reads and writes");
 
 
         pool.shutdown();
@@ -296,7 +297,7 @@ public class ReadTrace {
             else
                 abandoned++;
         }
-        System.out.println("total abandoned local latency = " + abandoned);
+        System.out.println("total abandoned local = " + abandoned);
 
         avg_local_latency = avg_local_latency / localLatencies.size();
         abandoned = 0;
@@ -308,24 +309,23 @@ public class ReadTrace {
             //System.out.println(remoteLatencies.elementAt(i));
         }
         avg_remote_latency = avg_remote_latency / remoteLatencies.size();
-        System.out.println("total abandoned remote latency = " + abandoned);
+        System.out.println("total abandoned remote = " + abandoned);
 
         System.out.println("number of local requests = " + localLatencies.size());
         System.out.println("total number of requests on this cluster = " + (localLatencies.size() + remoteLatencies.size()));
-        System.out.println("percentage of local requests on this cluster = " + localLatencies.size() / (localLatencies.size() + remoteLatencies.size()));
+        System.out.println("percentage of local requests on this cluster = " + localLatencies.size() * 100.0 / (localLatencies.size() + remoteLatencies.size()));
 
         System.out.println("average local latency for reads: " + avg_local_latency);
 
         System.out.println("average remote latency for reads: " + avg_remote_latency);
 
-        System.out.println("local bandwidth usage for reads: ");
-        System.out.println(total_bandwidth[0]);
+        System.out.println("local bandwidth usage for reads: " + total_bandwidth[0]);
 
-        System.out.println("remote bandwidth usage for reads: ");
-        System.out.println(total_bandwidth[1]);
+        System.out.println("remote bandwidth usage for reads: "  + total_bandwidth[1]);
     }
 
     public static void runExperiment(String traceFile, Cluster cluster, boolean cleanFirst, boolean replicate, boolean replicateWithPolicy) throws InterruptedException, IOException {
+        cluster.resetTotalCopied();
         System.out.println("At " + now() + ": Run trace " + traceFile + " " +
                 (replicate ?
                         (replicateWithPolicy ? "with replication policy" : "with unfiltered replication") :
@@ -353,6 +353,7 @@ public class ReadTrace {
         System.out.println("Done waiting");
         if (replicate) {
             executor.shutdown();
+            System.out.println("total bandwidth for replication (outgoing): " + cluster.getTotalCopied());
         }
     }
 

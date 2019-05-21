@@ -38,14 +38,12 @@ AUDIT_LOG=$EXPERIMENT_DIR/hadoop-2.9.2/logs/hdfs-audit.log
 JAVA_OPTS="-Dsd3.listener-port=22222 -Dsd3.hdfs-port=9001 \
            -Dsd3.trace-data=$TRACE_DATA -Dsd3.audit-log=$AUDIT_LOG \
            -Dsd3.generated-files=$GENERATED_FILES \
-           -Dsd3.cluster-hosts=$EXPERIMENT_HOSTS_COMMAS"
+           -Dsd3.cluster-hosts=$EXPERIMENT_HOSTS_COMMAS \
+           "
+           #-Dsd3.replicate-target-portion-enabled=false \
+           #-Dsd3.replicate-threshold=3.0"
 
-# Other settings in system properties:
-    # sd3.replicate-interval -- # seconds between checking for new replication tasks
-    # sd3.replciate-history-interval -- amount of historical access information to 
-    #                                   consider in determining whether the threshold
-    #                                   for replication is met
-    # sd3.trace-file-per-cluster -- # of files per cluster in synthetic traces
+# For other interesting settings, see README
 
 
 # Our current host name, for accessing the local HDFS installation from its namenode.

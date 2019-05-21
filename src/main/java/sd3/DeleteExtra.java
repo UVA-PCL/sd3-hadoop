@@ -24,6 +24,7 @@ public class DeleteExtra {
                 if (DEBUG) System.out.println("Deleted " + f.getPath());
             }
         }
+        fs.close();
     }
 
     public static void main(String[] args) throws IOException {

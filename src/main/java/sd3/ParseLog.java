@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 public class ParseLog {
+    private static final boolean DEBUG = false;
     public ArrayList<LogEntry> records;
     private String filename;
     private Date curTime;
@@ -28,6 +29,7 @@ public class ParseLog {
         try {
             BufferedReader br = new BufferedReader(new FileReader(filename));
             String line = br.readLine();
+            int oldCount = 0;
             while (line != null) {
                 String[] temp = line.split("\t| ");
                 
@@ -59,7 +61,8 @@ public class ParseLog {
                 try {
                     oldTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(line.substring(0, 19));
                 } catch (ParseException PE) {
-                    System.out.println("Parse Error!");
+                    line = br.readLine();
+                    continue;
                 }
 
                 if (interval == 0 || getDateDiff(oldTime, curTime, TimeUnit.SECONDS) < interval) {
@@ -68,12 +71,15 @@ public class ParseLog {
                     records.add(newLE);
                     //line = br.readLine();
                     //System.out.println("add to log");
-
+                } else {
+                    if (DEBUG) System.out.println("Rejected " + oldTime + " for being " + getDateDiff(oldTime, curTime, TimeUnit.SECONDS) + " behind.");
+                    ++oldCount;
                 }
                 line = br.readLine();
                 //System.out.println("Press Any Key To Continue...");
                 //new java.util.Scanner(System.in).nextLine();
             }
+            if (DEBUG) System.out.println("Found " + records.size() + " after filtering " + oldCount + " old records.");
         } catch (FileNotFoundException ex) {
             System.out.println(
                     "Unable to open file '" +
@@ -94,7 +100,7 @@ public class ParseLog {
 
     public long getDateDiff(Date date1, Date date2, TimeUnit timeUnit) {
         long diffInMillies = date2.getTime() - date1.getTime();
-        return timeUnit.convert(diffInMillies, timeUnit);
+        return timeUnit.convert(diffInMillies, TimeUnit.MILLISECONDS);
     }
 
     public ArrayList<String[]> getFrequency(double threshold) {
@@ -115,6 +121,9 @@ public class ParseLog {
                     frequency.put(key, -1);
             }
 
+        }
+        if (DEBUG) {
+            System.out.println("Found " + frequency.size() + " files from " + records.size() + " raw records.");
         }
         for (String k : frequency.keySet()) {
             if (frequency.get(k) >= threshold) {

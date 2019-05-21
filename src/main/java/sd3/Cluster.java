@@ -10,6 +10,20 @@ public class Cluster {
     final HashSet<Integer> remote_finished = new HashSet<Integer>();
     final HashSet<Integer> remote_finished_pending = new HashSet<Integer>();
 
+    private static long totalCopied = 0;
+
+    public long getTotalCopied() {
+        return totalCopied;
+    }
+
+    public void addToTotalCopied(long amount) {
+        totalCopied += amount;
+    }
+
+    public void resetTotalCopied() {
+        totalCopied = 0;
+    }
+
     public void finishRemote(int id) {
         synchronized (this) {
             if (remote_finished.contains(id)) {
