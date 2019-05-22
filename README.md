@@ -1,18 +1,19 @@
-This is repository includes an implementation for experiments simulating
+This is repository includes an implementation for experiments demonstrating
 Lin, Shen, and Chandler, "Selective Data Replication for Online Social Networks with Distributed Datacenters" built on top of Hadoop HDFS.
 
 To simulate the idea of having multiple distinct clusters, this prototype assumes that each cluster is its own HDFS instance (namenode and datanodes).
-Data is replicated on the granualirty of Hadoop files, and each file has a master copy, stored on a cluter identified by its name,
+Data is replicated on the granularity of Hadoop files, and each file has a master copy, stored on a cluter identified by its name.
 
 To access replicated copies, an agent on one of the clusters, first tries to access the file locally, then tries to access it on its master copy.
 On each cluster, a thread monitors the Hadoop audit log and replicates files in accordance with the SD3-determined threshold.
+In this implementation, these agents play back a sequence of accesses specified in a trace file.
 
 # Setup 
 
 To use the tools in this repository
 
 *  build the Java portions with `mvn package`
-*  edit `scripts/config.sh` to correspond to your site and where you intend to run experiements. You should have passwordless
+*  edit `scripts/config.sh` to correspond to your site and where you intend to run experiments. You should have passwordless
    SSH access to each machine on which you want to run a cluster. The scripts assume that all nodes have access to the 
    scripts via the same full path.
 *  edit the Hadoop configuration template sin `config-base` to at least include a correct `JAVA_HOME` in `hadoop-env.sh`
@@ -22,10 +23,10 @@ To use the tools in this repository
 
 Included in this repository:
 
-*  a script to setting up an single-node hadoop cluster with an appropriate configuration file `scripts/setup-all`.
+*  a script to setting up an single-node Hadoop cluster with an appropriate configuration file `scripts/setup-all`.
    This assumes that the scripts directory is accessible on all the machines to be used for single-node clusters
    (either it is on a shared network filesystem, or you copy over this repository manually). This
-   assumes you place a Hadoop binary trball for it to extract in a location specified in `scripts/config.sh`.
+   assumes you place a Hadoop binary tarball for it to extract in a location specified in `scripts/config.sh`.
 
 *  a script to starting and stopping the Hadoop clusters configured with `setup-all` in `scripts/start-all` and
    `scripts/stop-all`
@@ -36,7 +37,7 @@ Included in this repository:
 *  a script for uploading the random test files, `scripts/upload-all`.  This requires to the generated files directory to
    be copied to or available on each node.
 
-*  a tool for generating a psuedorandom trace indicating which files are read from which cluster, that reads some
+*  a tool for generating a pseudorandom trace indicating which files are read from which cluster, that reads some
     files preferentially according to a distribution, `scripts/trace-generator` (Java code in sd3.TraceGenerator).
 
    This prompts for its parameters. The resulting trace will include lines indicating a cluster number to perform an operation,
@@ -46,7 +47,7 @@ Included in this repository:
    The trace will be placed in the directory configured
    in config.sh, which will need to be accessible on all nodes.
 
-*  a tool for running  a trace simulatenously across each of the clusters, run as 
+*  a tool for running  a trace simultaneously across each of the clusters, run as 
 
         scripts/all-read-trace TRACENAME OUTPUT-FILE-BASE
   
@@ -106,7 +107,7 @@ and Haiying Shen.
 
 # Acknowledgements
 
-We would like to thank the collabarators of this project:
+We would like to thank the collaborators of this project:
 
 *  Bruce Maggs, Pelham Wilder Professor of Computer Science, Duke University and Vice President, Research, Akamai Technologies
 *  Weijia Xu, Research Engineer, Texas Advanced Computing Center 
