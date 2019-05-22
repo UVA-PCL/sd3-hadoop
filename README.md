@@ -40,7 +40,10 @@ Included in this repository:
     files preferentially according to a distribution, `scripts/trace-generator` (Java code in sd3.TraceGenerator).
 
    This prompts for its parameters. The resulting trace will include lines indicating a cluster number to perform an operation,
-   a filename, and whether the operation is a read or write. The trace will be placed in the directory configured
+   a filename, and whether the operation is a read or write.
+   The generated trace will preferentially choose lower-numbered files to access and each cluster will access
+   files distributed across the clusters with equal probability.
+   The trace will be placed in the directory configured
    in config.sh, which will need to be accessible on all nodes.
 
 *  a tool for running  a trace simulatenously across each of the clusters, run as 
@@ -49,10 +52,20 @@ Included in this repository:
   
    where TRACENAME is the name of the trace file generated with scripts/trace-generator, 
    which should be the location configured in config.sh.
-   and OUTPUT-FILE is the absolute path where the experiment output will be located. Each cluster will write their own output file postfixed with `.1`, `.2`, etc.
+   and OUTPUT-FILE is the absolute path where the experiment output will be located.
+   This output will include statitsics like the portion of local requests and the amount of data transferred locally
+   and remotely.
+   The bandwidth includes the amount data read or written (locally or remotely) when replaying the trace, but the
+   bandwidth for replication is accounted to by the cluster replicated from only.
+   Each cluster will write their own output file postfixed with `.1`, `.2`, etc.
    (Java code in `sd3.ReadTrace`)
 
-   By default, this runs trials of the trace with different replication policies. Change the `main()` function sd3.ReadTrace to edit this behavior.
+   By default, this runs trials of the trace with different replication policies, deleting any existing replicas in between trials.
+   Change the `main()` function sd3.ReadTrace to edit this behavior.
+
+   Although the generated trace files interleave operations from each cluster, the current replay of the trace does not
+   try to keep the different clusters explicitly in sync, so one cluster may start operations later in the trace
+   than another cluster.
 
 *  a tool for erasing extra replicas of files in `scripts/delete-extra` (Java code in sd3.DeleteExtra)
 
