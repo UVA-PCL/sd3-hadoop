@@ -24,7 +24,7 @@ public class SD3Config {
     private static int replicateInterval = Integer.parseInt(System.getProperty("sd3.replicate-interval", "10"));
     private static int replicateHistoryInterval = Integer.parseInt(System.getProperty("sd3.replicate-history-interval", "3600"));
     private static boolean replicateTargetPortionEnabled = System.getProperty("sd3.replicate-target-portion-enabled", "true").equals("true");
-    private static double replicateTargetPortion = Double.parseDouble(System.getProperty("sd3.replicate-target-portion", "0.06"));
+    private static double replicateTargetPortion = Double.parseDouble(System.getProperty("sd3.replicate-target-portion", "0.03"));
     private static double replicateThreshold = Double.parseDouble(System.getProperty("sd3.replicate-threshold", "NaN"));
     private static int filePerClusterCount = Integer.parseInt(System.getProperty("sd3.trace-file-per-cluster", "1000"));
 

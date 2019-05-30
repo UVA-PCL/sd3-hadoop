@@ -13,10 +13,12 @@ In this implementation, these agents play back a sequence of accesses specified 
 To use the tools in this repository
 
 *  build the Java portions with `mvn package`
-*  edit `scripts/config.sh` to correspond to your site and where you intend to run experiments. You should have passwordless
+*  copy `scripts/config.sh.template` to `scripts/config.sh` and edit itxi
+   to correspond to your site and where you intend to run experiments. You should have passwordless
    SSH access to each machine on which you want to run a cluster. The scripts assume that all nodes have access to the 
    scripts via the same full path.
-*  edit the Hadoop configuration template sin `config-base` to at least include a correct `JAVA_HOME` in `hadoop-env.sh`
+*  in the `config-base directory,  copy `hadoop-env.sh.template` to `hadoop-env.sh`, editing (at least)
+   the `JAVA_HOME` setting. You may also wish to edit other files in this directory.
 
 
 # Scripts
