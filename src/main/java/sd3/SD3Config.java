@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SD3Config {
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     private static final Map<String, Integer> ipToCluster = new HashMap<String, Integer>();
     private static final Map<Integer, String> clusterToIp = new HashMap<Integer, String>();
     private static int localCluster = 0;
